@@ -4,7 +4,7 @@ import NotFoundException from '../../helpers/errors/not-found.exception'
 import BadRequestException from '../../helpers/errors/bad-request.exception'
 import { User, UserDoc } from './user.model'
 import { Role } from './role.model'
-import InternalServerErrorException from 'src/helpers/errors/internal-server-error.exception'
+import InternalServerErrorException from '../../helpers/errors/internal-server-error.exception'
 
 @injectable()
 export class UserService {

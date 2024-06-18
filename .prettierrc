@@ -1,0 +1,33 @@
+{
+  "arrowParens": "always",
+  "semi": false,
+  "trailingComma": "none",
+  "tabWidth": 2,
+  "endOfLine": "auto",
+  "useTabs": false,
+  "singleQuote": true,
+  "printWidth": 120,
+  "jsxSingleQuote": true,
+
+  "importOrder": [
+    "dotenv/config",
+    "reflect-metadata",
+    "express-async-errors",
+    "<THIRD_PARTY_MODULES>",
+    "interface",
+    "(?=content|api)",
+    "provider/",
+    "context/",
+    "mock/",
+    "config",
+    "utils/",
+    "helpers/",
+    "hooks/",
+    "(components/|./index)",
+    ".svg",
+    "^../(.*)$",
+    "(?=./styles.module.scss)"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
+}

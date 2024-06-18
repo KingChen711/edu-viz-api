@@ -1,0 +1,264 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  roleName String @unique
+
+  users User[]
+}
+
+model Job {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  code        String   @unique
+  name        String
+  description String?
+  testExamIds String[] @db.ObjectId
+  color       String   @default("#29c5ee") //just a field for present job color to make UI better
+  icon        String   @default("suitcase.png") //just a field for present job icon to make UI better
+
+  testExams  TestExam[]  @relation(fields: [testExamIds], references: [id])
+  jobDetails JobDetail[]
+
+  createdAt DateTime @default(now())
+
+  @@index([code, name, description])
+}
+
+model User {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  roleId   String  @db.ObjectId
+  clerkId  String? @unique //user data có thể có trước khi người dùng tạo tài khoản trên hệ thống
+  email    String  @unique
+  fullName String
+  gender   Gender?
+  bornYear Int?
+  phone    String?
+  avatar   String  @default("/images/default-avatar.png")
+
+  role      Role       @relation(fields: [roleId], references: [id])
+  candidate Candidate?
+  employee  Employee?
+}
+
+enum Gender {
+  Male
+  Female
+  Other
+}
+
+model Employee {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Candidate {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId
+
+  user         User          @relation(fields: [userId], references: [id])
+  applications Application[]
+}
+
+model Application {
+  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
+  candidateId          String            @db.ObjectId
+  jobDetailId          String            @db.ObjectId
+  status               ApplicationStatus @default(Screening)
+  //Trong bảng application, fullName, gender, bornYear, phone có thể khác với trong bảng User. Bảng User có mục đích lưu trữ thông tin ứng viên để hệ thống có thể generate sẵn thông tin của ứng viên để có thể ứng tuyển nhanh chóng. Sau đó, ứng viên có thể thay đổi lại các trường thông tin này tùy ý để có thể tạo applition. Riêng trường email (unique và đại diện cho user) sẽ không đổi, nhưng vẫn cho vào bảng application để tiện cho việc query thông tin ứng tuyển
+  email                String
+  fullName             String
+  gender               Gender
+  bornYear             Int
+  phone                String
+  cv                   String
+  personalIntroduction String?
+
+  candidate         Candidate          @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+  jobDetail         JobDetail          @relation(fields: [jobDetailId], references: [id], onDelete: Restrict)
+  testSession       TestSession?
+  interviewSession  InterviewSession?
+  receiveJobSession ReceiveJobSession?
+
+  createdAt DateTime @default(now())
+
+  @@unique([candidateId, jobDetailId])
+}
+
+model ReceiveJobSession {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  applicationId  String   @unique @db.ObjectId
+  receiveJobDate DateTime
+  isConfirmed    Boolean
+  location       String
+
+  application    Application     @relation(fields: [applicationId], references: [id])
+  receiveJobWish ReceiveJobWish?
+}
+
+model InterviewSession {
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  applicationId String          @unique @db.ObjectId
+  interviewDate DateTime
+  status        InterviewStatus @default(Processing)
+  location      String
+  method        Method
+
+  application          Application           @relation(fields: [applicationId], references: [id])
+  interviewSessionWish InterviewSessionWish?
+}
+
+enum ReceiveJobWishType {
+  RejectJob
+  ChanegReceiJonTime
+}
+
+enum InterviewStatus {
+  Processing
+  Completed
+}
+
+model TestSession {
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  applicationId String            @unique @db.ObjectId
+  testExamCode  String
+  point         Float?
+  status        TestSessionStatus @default(Processing)
+  testDate      DateTime
+
+  application     Application      @relation(fields: [applicationId], references: [id])
+  testExam        TestExam         @relation(fields: [testExamCode], references: [code], onDelete: Restrict)
+  testSessionWish TestSessionWish?
+}
+
+enum Method {
+  Offline
+  Online
+}
+
+model InterviewSessionWish {
+  id                 String     @id @default(auto()) @map("_id") @db.ObjectId
+  interviewSessionId String     @unique @db.ObjectId
+  content            String
+  status             WishStatus
+  wishTime           DateTime
+
+  interviewSession InterviewSession @relation(fields: [interviewSessionId], references: [id])
+}
+
+model ReceiveJobWish {
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  receiveJobSessionId String             @unique @db.ObjectId
+  content             String?
+  status              WishStatus
+  wishTime            DateTime?
+  type                ReceiveJobWishType
+
+  receiveJobSession ReceiveJobSession @relation(fields: [receiveJobSessionId], references: [id])
+}
+
+model TestSessionWish {
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  testSessionId  String     @unique @db.ObjectId
+  content        String?
+  wishedTestTime DateTime
+  status         WishStatus @default(Processing)
+
+  testSession TestSession @relation(fields: [testSessionId], references: [id])
+}
+
+enum WishStatus {
+  Processing
+  Approve
+  Reject
+}
+
+enum TestSessionStatus {
+  Processing
+  Pass
+  Fail
+}
+
+enum ApplicationStatus {
+  Screening //Khi ứng viên đang tham gia vào đợt ứng tuyển hiện tại
+  Testing //Khi ứng viên đang trong giao đoạn làm kiểm tra đầu vào
+  Interviewing //Khi ứng viên đang trong giai đoạn phỏng vấn
+  Saved // Khi ứng viên chưa vượt qua được bài test của đợt ứng tuyển gần nhất hoặc kết quả phỏng vấn chưa đạt yêu cầu 
+  Approve //Khi ứng viên có kết quả phỏng vấn đạt yêu cầu và xác nhận làm việc tại công ty
+  Reject //Khi ứng viên có kết quả phỏng vấn đạt yêu cầu và xác nhận không làm việc tại công ty
+}
+
+model TestExam {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  code           String   @unique
+  name           String
+  duration       Int //minutes unit , min 0
+  description    String?
+  conditionPoint Float //max 10, min 0
+  jobIds         String[] @db.ObjectId
+
+  testSessions TestSession[]
+  questions    Question[] // không giới hạn số lượng câu hỏi
+  jobs         Job[]         @relation(fields: [jobIds], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Question {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  testExamId String @db.ObjectId
+  content    String
+
+  options  QuestionOption[] //length 4, and only 1 correct choice
+  testExam TestExam         @relation(fields: [testExamId], references: [id], onDelete: Cascade)
+}
+
+type QuestionOption {
+  content String
+  correct Boolean
+}
+
+model RecruitmentDrive {
+  id          String                 @id @default(auto()) @map("_id") @db.ObjectId
+  code        String                 @unique
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  description String?
+  status      RecruitmentDriveStatus
+  createdAt   DateTime               @default(now())
+
+  jobDetails JobDetail[]
+
+  @@index([createdAt(sort: Desc)])
+}
+
+enum RecruitmentDriveStatus {
+  Upcoming
+  Open
+  Closed
+}
+
+model JobDetail {
+  id                   String @id @default(auto()) @map("_id") @db.ObjectId
+  jobCode              String
+  recruitmentDriveCode String
+
+  quantity  Int
+  createdAt DateTime @default(now())
+
+  recruitmentDrive RecruitmentDrive @relation(fields: [recruitmentDriveCode], references: [code], onDelete: Cascade)
+  job              Job              @relation(fields: [jobCode], references: [code], onDelete: Restrict)
+  applications     Application[]
+
+  @@unique([jobCode, recruitmentDriveCode])
+  @@index([recruitmentDriveCode, createdAt(sort: Desc)])
+}

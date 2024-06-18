@@ -1,0 +1,8 @@
+import multer from 'multer'
+
+const storage = multer.memoryStorage()
+const upload = multer({ storage })
+
+const imageMulterMiddleware = upload.single('image')
+
+export default imageMulterMiddleware

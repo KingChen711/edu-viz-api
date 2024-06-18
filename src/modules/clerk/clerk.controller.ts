@@ -72,7 +72,7 @@ export class ClerkController {
         avatar: image_url,
         role: {
           connect: {
-            roleName: Role.CANDIDATE
+            roleName: Role.STUDENT
           }
         },
         candidate: {

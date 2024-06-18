@@ -3,8 +3,10 @@ import { Role as TRole } from '@prisma/client'
 import { Response } from 'express'
 
 export enum Role {
-  EMPLOYEE = 'Employee',
-  CANDIDATE = 'Candidate'
+  STUDENT = 'Student',
+  TUTOR = 'Tutor',
+  MODERATOR = 'Moderator',
+  ADMIN = 'Admin'
 }
 
 export type UserWithRole = User & { role: TRole }

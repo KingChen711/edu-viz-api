@@ -13,6 +13,8 @@ import morgan from 'morgan'
 import mongoose from 'mongoose'
 import NotFoundException from './helpers/errors/not-found.exception'
 import { ok } from './helpers/utils'
+import { User } from './modules/user/user.model'
+import { Role } from './modules/user/role.model'
 
 //!Just for development
 const DELAY = 0
@@ -32,6 +34,13 @@ app.use('/api/webhook/clerk', clerkRoute)
 
 app.use(bodyParser.json())
 app.use(corsMiddleware)
+
+app.get('/', async (req, res) => {
+  const user = await User.findOne().populate('role')
+  const role = await Role.findOne().populate('users')
+
+  return ok(res, { user, role })
+})
 
 app.use('/api/users', userRoute)
 

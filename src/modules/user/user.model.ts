@@ -1,5 +1,14 @@
 import mongoose, { Schema } from 'mongoose'
 
+//User Doc
+export interface UserDoc extends mongoose.Document {
+  roleId: string
+  clerkId: string
+  email: string
+  fullName: string
+  avatar: string
+}
+
 // User Schema
 const userSchema = new Schema({
   roleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', required: true },
@@ -12,7 +21,7 @@ const userSchema = new Schema({
   // phone String?
 })
 
-// Set up field for populated role
+// Set up relations
 userSchema.virtual('role', {
   ref: 'Role',
   localField: 'roleId',
@@ -25,4 +34,4 @@ userSchema.set('toObject', { virtuals: true })
 userSchema.set('toJSON', { virtuals: true })
 
 // Create models
-export const User = mongoose.model('User', userSchema)
+export const User = mongoose.model<UserDoc>('User', userSchema)

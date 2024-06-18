@@ -57,27 +57,19 @@ export class ClerkController {
 
       const userByEmail = await this.userService.getUserEmail(email_addresses[0].email_address)
 
-      // if (userByEmail) {
-      //   const user = await this.userService.updateUserByEmail(userByEmail.email, {
-      //     clerkId: id,
-      //     avatar: image_url
-      //   })
-      //   return created(res, user)
-      // }
+      if (userByEmail) {
+        const user = await this.userService.updateUserByEmail(userByEmail.email, {
+          clerkId: id,
+          avatar: image_url
+        })
+        return created(res, user)
+      }
 
-      const user = await this.userService.createUser({
+      const user = await this.userService.createUserStudent({
         clerkId: id,
         email: email_addresses[0].email_address,
         fullName: `${first_name}${last_name ? ` ${last_name}` : ''}`,
-        avatar: image_url,
-        role: {
-          connect: {
-            roleName: Role.STUDENT
-          }
-        },
-        candidate: {
-          create: {}
-        }
+        avatar: image_url
       })
       return created(res, user)
     }

@@ -1,7 +1,12 @@
 import mongoose, { Schema } from 'mongoose'
 
+//Role Doc
+export interface RoleDoc extends mongoose.Document {
+  roleName: string
+}
+
 //Role Schema
-export const roleSchema = new Schema({
+const roleSchema = new Schema({
   roleName: { type: String, unique: true, required: true }
 })
 
@@ -17,4 +22,4 @@ roleSchema.set('toObject', { virtuals: true })
 roleSchema.set('toJSON', { virtuals: true })
 
 // Create models
-export const Role = mongoose.model('Role', roleSchema)
+export const Role = mongoose.model<RoleDoc>('Role', roleSchema)

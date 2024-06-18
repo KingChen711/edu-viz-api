@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose'
 
 //User Doc
 export interface UserDoc extends mongoose.Document {
-  roleId: string
+  roleId: mongoose.Schema.Types.ObjectId
   clerkId: string
   email: string
   fullName: string
@@ -10,7 +10,7 @@ export interface UserDoc extends mongoose.Document {
 }
 
 // User Schema
-const userSchema = new Schema({
+const userSchema = new Schema<UserDoc>({
   roleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', required: true },
   clerkId: { type: String, unique: true, sparse: true }, // 'sparse' allows null values in a unique index
   email: { type: String, unique: true, required: true },

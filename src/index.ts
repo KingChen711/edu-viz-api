@@ -35,13 +35,6 @@ app.use('/api/webhook/clerk', clerkRoute)
 app.use(bodyParser.json())
 app.use(corsMiddleware)
 
-app.get('/', async (req, res) => {
-  const user = await User.findOne().populate('role')
-  const role = await Role.findOne().populate('users')
-
-  return ok(res, { user, role })
-})
-
 app.use('/api/users', userRoute)
 
 app.get('/', (req, res) => {

@@ -6,7 +6,7 @@ export interface RoleDoc extends mongoose.Document {
 }
 
 //Role Schema
-const roleSchema = new Schema({
+const roleSchema = new Schema<RoleDoc>({
   roleName: { type: String, unique: true, required: true }
 })
 

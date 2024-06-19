@@ -7,6 +7,7 @@ export interface UserDoc extends mongoose.Document {
   email: string
   fullName: string
   avatar: string
+  hubIds: mongoose.Schema.Types.ObjectId[]
   tutor?: {
     isAvailable: boolean
     bio?: string
@@ -22,6 +23,7 @@ const userSchema = new Schema<UserDoc>({
   email: { type: String, unique: true, required: true },
   fullName: { type: String, required: true },
   avatar: { type: String, default: '/images/default-avatar.png' },
+  hubIds: { type: [mongoose.Schema.Types.ObjectId], default: [] },
   tutor: {
     isAvailable: { type: Boolean, default: false },
     automaticGreeting: {
@@ -54,6 +56,24 @@ userSchema.virtual('reservations', {
   ref: 'Reservation',
   localField: '_id',
   foreignField: 'studentId'
+})
+
+userSchema.virtual('hubs', {
+  ref: 'Hub',
+  localField: 'hubIds',
+  foreignField: '_id'
+})
+
+userSchema.virtual('receivedMessages', {
+  ref: 'Message',
+  localField: '_id',
+  foreignField: 'receiverId'
+})
+
+userSchema.virtual('sentMessages', {
+  ref: 'Message',
+  localField: '_id',
+  foreignField: 'senderId'
 })
 
 // Ensure virtual fields are serialized

@@ -59,13 +59,6 @@ reservationSchema.virtual('student', {
   justOne: true
 })
 
-reservationSchema.virtual('feedback', {
-  ref: 'Feedback',
-  localField: '_id',
-  foreignField: 'reservationId',
-  justOne: true
-})
-
 // Ensure virtual fields are serialized
 reservationSchema.set('toObject', { virtuals: true })
 reservationSchema.set('toJSON', { virtuals: true })

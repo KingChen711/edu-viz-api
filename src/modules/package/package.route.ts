@@ -5,11 +5,23 @@ import { container } from '../../config/inversify.config'
 import { PackageController } from './package.controller'
 import { validateRequestData } from 'src/middleware/validate-request-data.middleware'
 import { getPackagesSchema } from './package.validation'
+import { Package } from './package.model'
+import { ok } from '../../helpers/utils'
+import mongoose from 'mongoose'
 
 const router = express.Router()
 
 const packageController = container.get(PackageController)
 
 router.get('/', validateRequestData(getPackagesSchema), packageController.getPackages)
+router.get('/test', validateRequestData(getPackagesSchema), async (req, res) => {
+  return ok(
+    res,
+    await Package.aggregate([
+      { $match: { subjectId: new mongoose.Types.ObjectId('667332306e55c6686d20a8ee') } },
+      { $project: { tutorId: 1 } }
+    ])
+  )
+})
 
 export { router as packageRoute }

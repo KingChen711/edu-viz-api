@@ -84,9 +84,7 @@ export class PackageService {
           as: 'reservations'
         }
       },
-      {
-        $unwind: '$tutor'
-      },
+
       {
         $match: query
       },
@@ -100,7 +98,7 @@ export class PackageService {
           status: 1,
           subject: { name: 1 },
           tutor: { fullName: 1, email: 1 },
-          reservations: { duration: 1, paidPrice: 1 }
+          reservations: { duration: 1, paidPrice: 1, feedback: { content: 1, value: 1 } }
         }
       }
     ]

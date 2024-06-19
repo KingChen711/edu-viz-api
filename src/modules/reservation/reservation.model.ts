@@ -15,6 +15,10 @@ export interface ReservationDoc extends mongoose.Document {
   paidPrice: number
   createdAt: Date
   status: ReservationStatus
+  feedback?: {
+    value: number
+    content?: string
+  }
 }
 
 //Reservation Schema
@@ -28,6 +32,13 @@ const reservationSchema = new Schema<ReservationDoc>(
       type: String,
       enum: ['Pending', 'Progress', 'Completed', 'Reject'] as const,
       require: true
+    },
+    feedback: {
+      type: {
+        value: { type: Number, required: true },
+        content: String
+      },
+      default: undefined
     }
   },
   { timestamps: true }

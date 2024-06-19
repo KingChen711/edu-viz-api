@@ -8,7 +8,7 @@ import { ok } from '../../helpers/utils'
 export class UserController {
   constructor(@inject(UserService) private readonly userService: UserService) {}
 
-  whoAmI = async (req: Request, res: ResponseWithUser) => {
+  public whoAmI = async (req: Request, res: ResponseWithUser) => {
     const user = res.locals.user
     return ok(res, user)
   }

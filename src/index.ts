@@ -13,8 +13,7 @@ import morgan from 'morgan'
 import mongoose from 'mongoose'
 import NotFoundException from './helpers/errors/not-found.exception'
 import { ok } from './helpers/utils'
-import { User } from './modules/user/user.model'
-import { Role } from './modules/user/role.model'
+import { subjectRoute } from './modules/subject/subject.route'
 
 //!Just for development
 const DELAY = 0
@@ -36,6 +35,7 @@ app.use(bodyParser.json())
 app.use(corsMiddleware)
 
 app.use('/api/users', userRoute)
+app.use('/api/subjects', subjectRoute)
 
 app.get('/', (req, res) => {
   return ok(res, { message: 'hello world' })

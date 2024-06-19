@@ -1,7 +1,5 @@
-import { inject, injectable } from 'inversify'
+import { injectable } from 'inversify'
 import { Role as ERole, UserWithRole } from '../../types'
-import NotFoundException from '../../helpers/errors/not-found.exception'
-import BadRequestException from '../../helpers/errors/bad-request.exception'
 import { User, UserDoc } from './user.model'
 import { Role } from './role.model'
 import InternalServerErrorException from '../../helpers/errors/internal-server-error.exception'
@@ -10,12 +8,12 @@ import InternalServerErrorException from '../../helpers/errors/internal-server-e
 export class UserService {
   constructor() {}
 
-  getUserByClerkIdWithRole = async (clerkId: string): Promise<UserWithRole | null> =>
+  public getUserByClerkIdWithRole = async (clerkId: string): Promise<UserWithRole | null> =>
     (await User.findOne({ clerkId }).populate('role')) as UserWithRole
 
-  getUserEmail = async (email: string) => await User.findOne({ email })
+  public getUserEmail = async (email: string) => await User.findOne({ email })
 
-  createUserStudent = async (user: Partial<UserDoc>) => {
+  public createUserStudent = async (user: Partial<UserDoc>) => {
     const studentRole = await Role.findOne({ roleName: ERole.STUDENT })
 
     if (!studentRole) {
@@ -25,8 +23,9 @@ export class UserService {
     return await User.create({ ...user, roleId: studentRole.id })
   }
 
-  updateUserByClerkId = async (clerkId: string, user: Partial<UserDoc>) =>
+  public updateUserByClerkId = async (clerkId: string, user: Partial<UserDoc>) =>
     await User.findOneAndUpdate({ clerkId }, user)
 
-  updateUserByEmail = async (email: string, user: Partial<UserDoc>) => await User.findOneAndUpdate({ email }, user)
+  public updateUserByEmail = async (email: string, user: Partial<UserDoc>) =>
+    await User.findOneAndUpdate({ email }, user)
 }

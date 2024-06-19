@@ -15,21 +15,25 @@ export interface PackageDoc extends mongoose.Document {
   images: string[]
   video?: string
   status: PackageStatus
+  createdAt: Date
 }
 
 //Package Schema
-const packageSchema = new Schema<PackageDoc>({
-  subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', required: true },
-  tutorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tutor', required: true },
-  pricePerHour: { type: Number, required: true },
-  images: { type: [String], default: [] },
-  video: String,
-  status: {
-    type: String,
-    enum: ['Pending', 'Reject', 'Active', 'Disable'] as const,
-    require: true
-  }
-})
+const packageSchema = new Schema<PackageDoc>(
+  {
+    subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', required: true },
+    tutorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tutor', required: true },
+    pricePerHour: { type: Number, required: true },
+    images: { type: [String], default: [] },
+    video: String,
+    status: {
+      type: String,
+      enum: ['Pending', 'Reject', 'Active', 'Disable'] as const,
+      require: true
+    }
+  },
+  { timestamps: true }
+)
 
 //Index
 packageSchema.index({ subjectId: 1, tutorId: 1 }, { unique: true })

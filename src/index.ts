@@ -14,6 +14,8 @@ import mongoose from 'mongoose'
 import NotFoundException from './helpers/errors/not-found.exception'
 import { ok } from './helpers/utils'
 import { subjectRoute } from './modules/subject/subject.route'
+import { User } from './modules/user/user.model'
+import { packageRoute } from './modules/package/package.route'
 
 //!Just for development
 const DELAY = 0
@@ -36,9 +38,11 @@ app.use(corsMiddleware)
 
 app.use('/api/users', userRoute)
 app.use('/api/subjects', subjectRoute)
+app.use('/api/packages', packageRoute)
 
-app.get('/', (req, res) => {
-  return ok(res, { message: 'hello world' })
+app.get('/', async (req, res) => {
+  const user = await User.findOne().populate('role')
+  return ok(res, { user })
 })
 
 app.all('*', () => {

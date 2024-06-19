@@ -25,13 +25,16 @@ const userSchema = new Schema<UserDoc>({
   avatar: { type: String, default: '/images/default-avatar.png' },
   hubIds: { type: [mongoose.Schema.Types.ObjectId], default: [] },
   tutor: {
-    isAvailable: { type: Boolean, default: false },
-    automaticGreeting: {
-      type: String,
-      default: "Welcome! I'm here to help you succeed. Looking forward to working with you!"
+    type: {
+      isAvailable: { type: Boolean, default: false },
+      automaticGreeting: {
+        type: String,
+        default: "Welcome! I'm here to help you succeed. Looking forward to working with you!"
+      },
+      bio: String,
+      album: [String]
     },
-    bio: String,
-    album: [String]
+    default: undefined
   }
   // gender Gender?
   // bornYear Int?

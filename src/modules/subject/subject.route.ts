@@ -8,6 +8,6 @@ const router = express.Router()
 
 const subjectController = container.get(SubjectController)
 
-router.get('/', subjectController.getAll)
+router.get('/', subjectController.getAllSubjects)
 
 export { router as subjectRoute }

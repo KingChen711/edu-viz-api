@@ -5,5 +5,5 @@ import { Subject } from './subject.model'
 export class SubjectService {
   constructor() {}
 
-  public getAll = async () => await Subject.find()
+  public getAllSubjects = async () => await Subject.find()
 }

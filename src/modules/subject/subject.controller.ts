@@ -8,8 +8,8 @@ import { ok } from '../../helpers/utils'
 export class SubjectController {
   constructor(@inject(SubjectService) private readonly subjectService: SubjectService) {}
 
-  public getAll = async (req: Request, res: Response) => {
-    const subjects = await this.subjectService.getAll()
+  public getAllSubjects = async (req: Request, res: Response) => {
+    const subjects = await this.subjectService.getAllSubjects()
     return ok(res, subjects)
   }
 }

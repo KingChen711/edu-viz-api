@@ -5,7 +5,6 @@ import { UserDoc } from '../modules/user/user.model'
 export enum Role {
   STUDENT = 'Student',
   TUTOR = 'Tutor',
-  MODERATOR = 'Moderator',
   ADMIN = 'Admin'
 }
 

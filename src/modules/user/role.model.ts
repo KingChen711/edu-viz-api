@@ -1,13 +1,14 @@
 import mongoose, { Schema } from 'mongoose'
+import { Role as ERole } from '../../types'
 
 //Role Doc
 export interface RoleDoc extends mongoose.Document {
-  roleName: string
+  roleName: ERole
 }
 
 //Role Schema
 const roleSchema = new Schema<RoleDoc>({
-  roleName: { type: String, unique: true, required: true }
+  roleName: { type: String, enum: ['Admin', 'Tutor', 'Student'], unique: true, required: true }
 })
 
 // Set up relationships

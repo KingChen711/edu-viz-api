@@ -7,6 +7,12 @@ export interface UserDoc extends mongoose.Document {
   email: string
   fullName: string
   avatar: string
+  tutor?: {
+    isAvailable: boolean
+    bio?: string
+    album: string[]
+    automaticGreeting: string
+  }
 }
 
 // User Schema
@@ -15,7 +21,16 @@ const userSchema = new Schema<UserDoc>({
   clerkId: { type: String, unique: true, sparse: true }, // 'sparse' allows null values in a unique index
   email: { type: String, unique: true, required: true },
   fullName: { type: String, required: true },
-  avatar: { type: String, default: '/images/default-avatar.png' }
+  avatar: { type: String, default: '/images/default-avatar.png' },
+  tutor: {
+    isAvailable: { type: Boolean, default: false },
+    automaticGreeting: {
+      type: String,
+      default: "Welcome! I'm here to help you succeed. Looking forward to working with you!"
+    },
+    bio: String,
+    album: [String]
+  }
   // gender Gender?
   // bornYear Int?
   // phone String?
@@ -27,6 +42,18 @@ userSchema.virtual('role', {
   localField: 'roleId',
   foreignField: '_id',
   justOne: true
+})
+
+userSchema.virtual('packages', {
+  ref: 'Package',
+  localField: '_id',
+  foreignField: 'tutorId'
+})
+
+userSchema.virtual('reservations', {
+  ref: 'Reservation',
+  localField: '_id',
+  foreignField: 'studentId'
 })
 
 // Ensure virtual fields are serialized

@@ -16,10 +16,12 @@ export class PackageService {
 
   public getPackages = async (schema: TGetPackagesSchema) => {
     const {
-      query: { pageNumber, pageSize, sort, subjectId, search }
+      query: { pageNumber, pageSize, sort, subjectId, search, status }
     } = schema
 
     const subjectFilter: FilterQuery<PackageDoc> = subjectId ? { subjectId: new Types.ObjectId(subjectId) } : {}
+
+    const statusFilter: FilterQuery<PackageDoc> = status !== 'All' ? { status } : {}
 
     const searchFilter: FilterQuery<PackageDoc> = search
       ? {
@@ -31,7 +33,7 @@ export class PackageService {
         }
       : {}
 
-    const query: FilterQuery<PackageDoc> = { $and: [subjectFilter, searchFilter] }
+    const $match: FilterQuery<PackageDoc> = { $and: [subjectFilter, searchFilter, statusFilter] }
 
     // Aggregation pipeline stages
     const pipeLines = [
@@ -40,7 +42,7 @@ export class PackageService {
       { $lookup: { from: 'users', localField: 'tutorId', foreignField: '_id', as: 'tutor' } },
       { $unwind: '$tutor' },
       { $lookup: { from: 'reservations', localField: '_id', foreignField: 'packageId', as: 'reservations' } },
-      { $match: query },
+      { $match },
       {
         $project: {
           subjectId: 1,
@@ -73,8 +75,6 @@ export class PackageService {
     ])
 
     const totalCount = totalCountResult[0] ? totalCountResult[0].total : 0
-
-    console.log({ totalCountResult })
 
     return new PagedList(packages, totalCount, pageNumber, pageSize)
   }

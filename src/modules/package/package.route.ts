@@ -3,17 +3,18 @@ import 'dotenv/config'
 import express from 'express'
 import { container } from '../../config/inversify.config'
 import { PackageController } from './package.controller'
-import { validateRequestData } from 'src/middleware/validate-request-data.middleware'
+import { validateRequestData } from '../../middleware/validate-request-data.middleware'
 import { getPackagesSchema } from './package.validation'
 import { Package } from './package.model'
 import { ok } from '../../helpers/utils'
 import mongoose from 'mongoose'
+import { authentication } from '../../middleware/authentication.middleware'
 
 const router = express.Router()
 
 const packageController = container.get(PackageController)
 
-router.get('/', validateRequestData(getPackagesSchema), packageController.getPackages)
+router.get('/', authentication(false), validateRequestData(getPackagesSchema), packageController.getPackages)
 router.get('/test', validateRequestData(getPackagesSchema), async (req, res) => {
   return ok(
     res,

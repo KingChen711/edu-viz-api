@@ -1,5 +1,8 @@
 import { isValidObjectId } from 'mongoose'
 import z from 'zod'
+import { PackageStatus } from './package.model'
+
+PackageStatus
 
 export const getPackagesSchema = z.object({
   query: z.object({
@@ -9,6 +12,7 @@ export const getPackagesSchema = z.object({
       .catch(10)
       .transform((data) => Math.min(data, 50)),
     search: z.coerce.string().trim().optional(),
+    status: z.enum(['All', 'Pending', 'Reject', 'Active', 'Disable']).catch('Active'),
     subjectId: z
       .string()
       .optional()

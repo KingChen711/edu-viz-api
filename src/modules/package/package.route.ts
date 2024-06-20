@@ -9,12 +9,19 @@ import { Package } from './package.model'
 import { ok } from '../../helpers/utils'
 import mongoose from 'mongoose'
 import { authentication } from '../../middleware/authentication.middleware'
+import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node'
 
 const router = express.Router()
 
 const packageController = container.get(PackageController)
 
-router.get('/', authentication(false), validateRequestData(getPackagesSchema), packageController.getPackages)
+router.get(
+  '/',
+  ClerkExpressWithAuth(),
+  authentication(false),
+  validateRequestData(getPackagesSchema),
+  packageController.getPackages
+)
 router.get('/test', validateRequestData(getPackagesSchema), async (req, res) => {
   return ok(
     res,

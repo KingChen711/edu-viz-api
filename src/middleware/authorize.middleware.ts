@@ -11,6 +11,7 @@ import UnauthorizedException from '../helpers/errors/unauthorized-exception'
 import { UserService } from '../modules/user/user.service'
 import { Role } from '../types'
 
+//*required token(user) and optional check roles
 const authorize = (roles?: Role[]) => async (req: WithAuthProp<Request>, res: Response, next: NextFunction) => {
   try {
     if (!req.auth.sessionId) throw new UnauthorizedException('Invalid Token')

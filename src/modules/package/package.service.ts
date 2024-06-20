@@ -51,9 +51,12 @@ export class PackageService {
           images: 1,
           video: 1,
           status: 1,
+          createdAt: 1,
           'subject.name': 1,
           'tutor.fullName': 1,
           'tutor.email': 1,
+          'tutor.avatar': 1,
+          'tutor.tutor.isAvailable': 1,
           totalReservations: { $size: '$reservations' }, // Calculate total reservations per package
           avgFeedbackValue: { $avg: '$reservations.feedback.value' } // Calculate average feedback value
         }

@@ -10,6 +10,9 @@ import UnauthorizedException from '../helpers/errors/unauthorized-exception'
 
 import { UserService } from '../modules/user/user.service'
 
+//*check token(user) and may not required token(user) if required=false
+//*It's like trying to get the user from the request but it doesn't require a user
+//*Using this middleware for the endpoint that its business logic based on each role even Guest (no token)
 const authentication =
   (required: boolean = true) =>
   async (req: WithAuthProp<Request>, res: Response, next: NextFunction) => {
@@ -27,6 +30,8 @@ const authentication =
 
       next()
     } catch (error) {
+      console.log(error)
+
       throw new ForbiddenException()
     }
   }

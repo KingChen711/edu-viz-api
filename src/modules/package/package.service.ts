@@ -1,8 +1,11 @@
 import { injectable } from 'inversify'
-import { Package, PackageDoc } from './package.model'
-import { TGetPackagesSchema } from './package.validation'
+import { Package, PackageDoc, PackageStatus } from './package.model'
+import { TGetPackageSchema, TGetPackagesSchema } from './package.validation'
 import { FilterQuery, Types } from 'mongoose'
-import { PagedList } from 'src/helpers/paged-list'
+import { PagedList } from '../../helpers/paged-list'
+import { Role, UserWithRole } from '../../types'
+import NotFoundException from 'src/helpers/errors/not-found.exception'
+import ForbiddenException from 'src/helpers/errors/forbidden-exception'
 
 @injectable()
 export class PackageService {
@@ -80,5 +83,65 @@ export class PackageService {
     const totalCount = totalCountResult[0] ? totalCountResult[0].total : 0
 
     return new PagedList(packages, totalCount, pageNumber, pageSize)
+  }
+
+  public getPackage = async (user: UserWithRole | null, schema: TGetPackageSchema) => {
+    const {
+      params: { id }
+    } = schema
+
+    const packageResult = await Package.aggregate([
+      {
+        $lookup: {
+          from: 'reservations',
+          localField: '_id',
+          foreignField: 'packageId',
+          as: 'reservations'
+        }
+      },
+      {
+        $lookup: {
+          from: 'subjects',
+          localField: 'subjectId',
+          foreignField: '_id',
+          as: 'subject'
+        }
+      },
+      { $unwind: '$subject' },
+      {
+        $match: {
+          _id: new Types.ObjectId(id)
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          subjectId: 1,
+          tutorId: 1,
+          pricePerHour: 1,
+          status: 1,
+          'subject.name': 1,
+          'subject.image': 1,
+          'subject.description': 1,
+          totalReservations: { $size: '$reservations' }, // Calculate total reservations per package
+          avgFeedbackValue: { $avg: '$reservations.feedback.value' } // Calculate average feedback value
+        }
+      }
+    ])
+
+    const _package = packageResult.length > 0 ? packageResult[0] : null
+
+    if (!_package) {
+      throw new NotFoundException(`Not found package with id: ${id}`)
+    }
+
+    const isAdmin = user?.role.roleName === Role.ADMIN
+    const isTutorAndOwnsPackages = user?.role.roleName === Role.TUTOR && user.id === _package?.tutorId
+
+    if (_package.status !== PackageStatus.ACTIVE && !isAdmin && !isTutorAndOwnsPackages) {
+      throw new ForbiddenException()
+    }
+
+    return _package
   }
 }

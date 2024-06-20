@@ -16,6 +16,7 @@ import { ok } from './helpers/utils'
 import { subjectRoute } from './modules/subject/subject.route'
 import { User } from './modules/user/user.model'
 import { packageRoute } from './modules/package/package.route'
+import { tutorRoute } from './modules/tutor/tutor.route'
 
 //!Just for development
 const DELAY = 0
@@ -39,6 +40,7 @@ app.use(corsMiddleware)
 app.use('/api/users', userRoute)
 app.use('/api/subjects', subjectRoute)
 app.use('/api/packages', packageRoute)
+app.use('/api/tutors', tutorRoute)
 
 app.get('/', async (req, res) => {
   const user = await User.findOne().populate('role')

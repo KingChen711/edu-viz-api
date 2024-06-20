@@ -24,7 +24,7 @@ const packageSchema = new Schema<PackageDoc>(
     subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', required: true },
     tutorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tutor', required: true },
     pricePerHour: { type: Number, required: true },
-    images: { type: [String], default: [] },
+    images: { type: [String], default: [], required: true },
     video: String,
     status: {
       type: String,

@@ -18,6 +18,7 @@ export interface ReservationDoc extends mongoose.Document {
   feedback?: {
     value: number
     content?: string
+    createdAt: Date
   }
 }
 
@@ -36,7 +37,8 @@ const reservationSchema = new Schema<ReservationDoc>(
     feedback: {
       type: {
         value: { type: Number, required: true },
-        content: String
+        content: String,
+        createdAt: { type: Date, required: true, default: Date.now() }
       },
       default: undefined
     }

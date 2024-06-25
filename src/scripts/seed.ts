@@ -4,7 +4,7 @@ import { Subject } from '../modules/subject/subject.model'
 import { Role } from '../modules/user/role.model'
 
 const seedData = async () => {
-  await mongoose.connect(process.env.MONGO_URL!)
+  await mongoose.connect(process.env.DATABASE_URL!)
 
   // Clear existing data
   await Subject.deleteMany({})

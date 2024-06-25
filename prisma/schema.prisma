@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  roleName ERole  @unique
+
+  users User[]
+
+  @@map("roles")
+}
+
+enum ERole {
+  Tutor
+  Student
+  Admin
+  Moderator
+}
+
+model User {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  roleId   String   @db.ObjectId
+  clerkId  String?  @unique
+  email    String   @unique
+  fullName String
+  avatar   String   @default("/images/default-avatar.png")
+  hubIds   String[] @db.ObjectId
+  balance  Int      @default(0)
+
+  tutor Tutor?
+
+  role         Role          @relation(fields: [roleId], references: [id])
+  hubs         Hub[]         @relation(fields: [hubIds], references: [id])
+  reservations Reservation[] //only student role
+  packages     Package[] //only tutor role
+
+  receivedMessage Message[] @relation("ReceivedMessage")
+  sentMessage     Message[] @relation("SentMessage")
+
+  @@map("users")
+}
+
+type Tutor {
+  isAvailable       Boolean  @default(false)
+  automaticGreeting String   @default("Hello mấy cưng")
+  bio               String?
+  album             String[]
+}
+
+model Subject {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String  @unique
+  image       String  @default("/images/default-subject.png")
+  description String?
+
+  packages Package[]
+
+  @@map("subjects")
+}
+
+model Hub {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  createdAt     DateTime @default(now())
+  lastMessageAt DateTime @default(now())
+
+  userIds String[] @db.ObjectId
+
+  users    User[]    @relation(fields: [userIds], references: [id])
+  messages Message[]
+
+  @@map("hubs")
+}
+
+model Message {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String   @db.ObjectId
+  receiverId String   @db.ObjectId
+  hubId      String   @db.ObjectId
+  isSeen     Boolean
+  createdAt  DateTime @default(now())
+
+  //need to check image,video,content exist one
+  image   String?
+  video   String?
+  content String?
+
+  sender   User @relation(name: "SentMessage", fields: [senderId], references: [id])
+  receiver User @relation(name: "ReceivedMessage", fields: [receiverId], references: [id])
+  hub      Hub  @relation(fields: [hubId], references: [id])
+
+  @@map("messages")
+}
+
+model Package {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  subjectId    String        @db.ObjectId
+  tutorId      String        @db.ObjectId
+  pricePerHour Int
+  images       String[] //max 6
+  video        String?
+  status       PackageStatus @default(Pending)
+  createdAt    DateTime      @default(now())
+
+  tutor        User          @relation(fields: [tutorId], references: [id])
+  subject      Subject       @relation(fields: [subjectId], references: [id])
+  reservations Reservation[]
+
+  @@unique([tutorId, subjectId])
+  @@map("packages")
+}
+
+model Reservation {
+  id        String            @id @default(auto()) @map("_id") @db.ObjectId
+  studentId String            @db.ObjectId
+  packageId String            @db.ObjectId
+  duration  Int //hour
+  paidPrice Float //sync with duration*pricePerHour at the reservation created
+  createdAt DateTime          @default(now())
+  status    ReservationStatus @default(Pending)
+
+  package  Package   @relation(fields: [packageId], references: [id])
+  student  User      @relation(fields: [studentId], references: [id])
+  feedback Feedback?
+
+  @@map("reservations")
+}
+
+type Feedback {
+  value    Int //1 to 5
+  content  String?
+  createAt DateTime @default(now())
+}
+
+enum ReservationStatus {
+  Pending //defeault wwhen user create reservation
+  Progress //tutor and student is on working
+  Completed //done student give feedback, or system auto complted after 24h
+  Reject //tutor reject, or tutor miss the reservation => system auto reject after 1h
+}
+
+enum PackageStatus {
+  Pending
+  Reject
+  Active //Moderated
+  Disable
+}

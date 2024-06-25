@@ -58,7 +58,7 @@ const PORT = process.env.PORT || 6000
 
 const bootstrap = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URL!)
+    await mongoose.connect(process.env.DATABASE_URL!)
 
     console.log('Mongoose connected')
   } catch (error) {

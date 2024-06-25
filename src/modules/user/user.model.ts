@@ -8,6 +8,7 @@ export interface UserDoc extends mongoose.Document {
   fullName: string
   avatar: string
   hubIds: mongoose.Schema.Types.ObjectId[]
+  balance: number
   tutor?: {
     isAvailable: boolean
     bio?: string
@@ -23,6 +24,7 @@ const userSchema = new Schema<UserDoc>({
   email: { type: String, unique: true, required: true },
   fullName: { type: String, required: true },
   avatar: { type: String, default: '/images/default-avatar.png' },
+  balance: { type: Number, default: 0, required: true },
   hubIds: { type: [mongoose.Schema.Types.ObjectId], default: [] },
   tutor: {
     type: {

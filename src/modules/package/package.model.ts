@@ -22,7 +22,7 @@ export interface PackageDoc extends mongoose.Document {
 const packageSchema = new Schema<PackageDoc>(
   {
     subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', required: true },
-    tutorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tutor', required: true },
+    tutorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     pricePerHour: { type: Number, required: true },
     images: { type: [String], default: [], required: true },
     video: String,

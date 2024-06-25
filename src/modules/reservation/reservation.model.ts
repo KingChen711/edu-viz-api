@@ -25,7 +25,7 @@ export interface ReservationDoc extends mongoose.Document {
 //Reservation Schema
 const reservationSchema = new Schema<ReservationDoc>(
   {
-    studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+    studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     packageId: { type: mongoose.Schema.Types.ObjectId, ref: 'Package', required: true },
     duration: { type: Number, requited: true },
     paidPrice: { type: Number, requited: true },

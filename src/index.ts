@@ -7,6 +7,8 @@ import 'express-async-errors'
 import corsMiddleware from './middleware/cors.middleware'
 import errorHandlingMiddleware from './middleware/error-handling.middleware'
 import multerErrorHandlingMiddleware from './middleware/multer-error-handling.middleware'
+import { ChatController } from './modules/chat/chat.controller'
+import { chatRoute } from './modules/chat/chat.route'
 import { clerkRoute } from './modules/clerk/clerk.route'
 import { packageRoute } from './modules/package/package.route'
 import { reservationRoute } from './modules/reservation/reservation.route'
@@ -16,10 +18,12 @@ import { userRoute } from './modules/user/user.route'
 import bodyParser from 'body-parser'
 import express from 'express'
 import helmet from 'helmet'
+import http from 'http'
 import mongoose from 'mongoose'
 import morgan from 'morgan'
-import http from 'http'
-import { Server } from 'socket.io'
+import { Server, Socket } from 'socket.io'
+
+import { container } from './config/inversify.config'
 
 import NotFoundException from './helpers/errors/not-found.exception'
 import { ok } from './helpers/utils'
@@ -29,7 +33,11 @@ const DELAY = 0
 
 const app = express()
 const server = http.createServer(app)
-const io = new Server(server)
+const io = new Server(server, {
+  cors: {
+    origin: '*'
+  }
+})
 
 app.use((req, res, next) => {
   setTimeout(next, DELAY)
@@ -50,6 +58,7 @@ app.use('/api/subjects', subjectRoute)
 app.use('/api/packages', packageRoute)
 app.use('/api/tutors', tutorRoute)
 app.use('/api/reservations', reservationRoute)
+app.use('/api/chats', chatRoute)
 
 app.get('/', async (req, res) => {
   return ok(res, { message: 'Hello World' })
@@ -74,6 +83,8 @@ const bootstrap = async () => {
   }
 
   server.listen(PORT, () => {
+    const chatController = container.get(ChatController)
+    io.on('connection', (socket: Socket) => chatController.handleConnection(socket))
     console.log(`Listening on port ${PORT}!!!`)
   })
 }

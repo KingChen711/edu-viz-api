@@ -20,20 +20,14 @@ const authentication =
       const clerkId = req?.auth?.userId
       if (!clerkId && required) throw new UnauthorizedException('Invalid Token')
 
-      console.log({ clerkId })
-
       const userService = container.get(UserService)
       const user = clerkId ? await userService.getUserByClerkIdWithRole(clerkId) : null
       if (!user && required) throw new UnauthorizedException('Invalid Token')
 
       res.locals.user = user
 
-      console.log({ user })
-
       next()
     } catch (error) {
-      console.log(error)
-
       throw new ForbiddenException()
     }
   }

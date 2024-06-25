@@ -1,7 +1,9 @@
-import { inject, injectable } from 'inversify'
-import { PrismaService } from '../prisma/prisma.service'
 import { ChatService } from './chat.service'
+import { inject, injectable } from 'inversify'
 import { Socket } from 'socket.io'
+
+import { io } from '../..'
+import { PrismaService } from '../prisma/prisma.service'
 
 @injectable()
 export class SocketService {
@@ -12,15 +14,15 @@ export class SocketService {
 
   public joinRoom(socket: Socket, room: string) {
     socket.join(room)
-    socket.to(room).emit('message', `User ${socket.id} has joined the room`)
+    io.to(room).emit('message', `User ${socket.id} has joined the room ${room}`)
   }
 
   public leaveRoom(socket: Socket, room: string) {
     socket.leave(room)
-    socket.to(room).emit('message', `User ${socket.id} has left the room`)
+    io.to(room).emit('message', `User ${socket.id} has left the room ${room}`)
   }
 
   public sendMessage(socket: Socket, msg: { room: string; message: string }) {
-    socket.to(msg.room).emit('message', msg.message)
+    io.to(msg.room).emit('message', msg.message)
   }
 }

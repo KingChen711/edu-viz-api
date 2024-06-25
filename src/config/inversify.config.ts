@@ -1,6 +1,8 @@
 import { Container } from 'inversify'
 
+import { ChatController } from '../modules/chat/chat.controller'
 import { ChatService } from '../modules/chat/chat.service'
+import { SocketService } from '../modules/chat/socket.service'
 import { ClerkController } from '../modules/clerk/clerk.controller'
 import { PackageController } from '../modules/package/package.controller'
 import { PackageService } from '../modules/package/package.service'
@@ -13,8 +15,6 @@ import { TutorController } from '../modules/tutor/tutor.controller'
 import { TutorService } from '../modules/tutor/tutor.service'
 import { UserController } from '../modules/user/user.controller'
 import { UserService } from '../modules/user/user.service'
-import { ChatController } from '../modules/chat/chat.controller'
-import { SocketService } from '../modules/chat/socket.service'
 
 const container = new Container()
 

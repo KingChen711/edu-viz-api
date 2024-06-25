@@ -7,8 +7,8 @@ import { ReservationStatus } from '@prisma/client'
 import { inject, injectable } from 'inversify'
 
 import BadRequestException from '../../helpers/errors/bad-request.exception'
-import NotFoundException from '../../helpers/errors/not-found.exception'
 import ForbiddenException from '../../helpers/errors/forbidden-exception'
+import NotFoundException from '../../helpers/errors/not-found.exception'
 
 import { UserWithRole } from '../../types'
 import { ChatService } from '../chat/chat.service'

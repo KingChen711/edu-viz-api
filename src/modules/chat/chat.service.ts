@@ -21,6 +21,7 @@ type TCreateMessage = {
     }
   | {
       type: Exclude<MessageType, 'Text' | 'Image' | 'Video'>
+      reservationId: string
     }
 )
 
@@ -64,9 +65,28 @@ export class ChatService {
 
   private createMessage = async (params: TCreateMessage) => {
     const { receiverId, senderId, type } = params
-    const image = type === 'Image' ? params.image : undefined
-    const video = type === 'Video' ? params.video : undefined
-    const content = type === 'Text' ? params.content : undefined
+    let content: string | undefined = undefined
+    let image: string | undefined = undefined
+    let video: string | undefined = undefined
+    let reservationId: string | undefined = undefined
+
+    switch (type) {
+      case 'Text': {
+        content = params.content
+        break
+      }
+      case 'Image': {
+        image = params.image
+        break
+      }
+      case 'Video': {
+        video = params.video
+        break
+      }
+      default: {
+        reservationId = params.reservationId
+      }
+    }
 
     const hub = await this.getOrCreateHub(senderId, receiverId)
 
@@ -77,6 +97,7 @@ export class ChatService {
         lastMessageAt: now,
         messages: {
           create: {
+            reservationId,
             image,
             content,
             video,
@@ -99,30 +120,34 @@ export class ChatService {
     })
   }
 
-  public createSystemOrderMessage = async (studentId: string, tutorId: string) =>
+  public createReservationOrderMessage = async (studentId: string, tutorId: string, reservationId: string) =>
     await this.createMessage({
-      type: 'SystemOrder',
+      reservationId,
+      type: 'ReservationOrder',
       receiverId: tutorId,
       senderId: studentId
     })
 
-  public createSystemApproveMessage = async (studentId: string, tutorId: string) =>
+  public createReservationApproveMessage = async (studentId: string, tutorId: string, reservationId: string) =>
     await this.createMessage({
-      type: 'SystemApprove',
+      reservationId,
+      type: 'ReservationApprove',
       receiverId: studentId,
       senderId: tutorId
     })
 
-  public createSystemRejectMessage = async (studentId: string, tutorId: string) =>
+  public createReservationRejectMessage = async (studentId: string, tutorId: string, reservationId: string) =>
     await this.createMessage({
-      type: 'SystemReject',
+      reservationId,
+      type: 'ReservationReject',
       receiverId: studentId,
       senderId: tutorId
     })
 
-  public createSystemCompleteMessage = async (studentId: string, tutorId: string) =>
+  public createReservationCompleteMessage = async (studentId: string, tutorId: string, reservationId: string) =>
     await this.createMessage({
-      type: 'SystemComplete',
+      reservationId,
+      type: 'ReservationComplete',
       receiverId: tutorId,
       senderId: studentId
     })

@@ -44,4 +44,22 @@ export class ReservationController {
 
     return noContent(res)
   }
+
+  public approveReservation = async (req: Request, res: ResponseWithUser) => {
+    const user = res.locals.user
+    await this.reservationService.approveReservation(user, res.locals.requestData)
+    return noContent(res)
+  }
+
+  public rejectReservation = async (req: Request, res: ResponseWithUser) => {
+    const user = res.locals.user
+    await this.reservationService.rejectReservation(user, res.locals.requestData)
+    return noContent(res)
+  }
+
+  public completeReservation = async (req: Request, res: ResponseWithUser) => {
+    const user = res.locals.user
+    await this.reservationService.completeReservation(user, res.locals.requestData)
+    return noContent(res)
+  }
 }

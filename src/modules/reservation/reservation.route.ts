@@ -2,7 +2,11 @@
 import 'dotenv/config'
 
 import { ReservationController } from './reservation.controller'
-import { createReservationSchema } from './reservation.validation'
+import {
+  approveOrRejectReservationSchema,
+  completeReservationSchema,
+  createReservationSchema
+} from './reservation.validation'
 import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node'
 import express from 'express'
 import { authorize } from 'src/middleware/authorize.middleware'
@@ -15,6 +19,30 @@ import { Role } from '../../types'
 const router = express.Router()
 
 const reservationController = container.get(ReservationController)
+
+router.patch(
+  '/:reservationId/complete',
+  ClerkExpressWithAuth(),
+  authorize([Role.STUDENT]),
+  validateRequestData(completeReservationSchema),
+  reservationController.completeReservation
+)
+
+router.patch(
+  '/:reservationId/reject',
+  ClerkExpressWithAuth(),
+  authorize([Role.TUTOR]),
+  validateRequestData(approveOrRejectReservationSchema),
+  reservationController.rejectReservation
+)
+
+router.patch(
+  '/:reservationId/approve',
+  ClerkExpressWithAuth(),
+  authorize([Role.TUTOR]),
+  validateRequestData(approveOrRejectReservationSchema),
+  reservationController.approveReservation
+)
 
 router.post(
   '/',

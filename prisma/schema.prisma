@@ -88,10 +88,11 @@ model Message {
   createdAt  DateTime @default(now())
 
   //need to check image,video,content exist one
-  image   String?
-  video   String?
-  content String?
-  type    MessageType @default(Text)
+  image         String?
+  video         String?
+  content       String?
+  reservationId String?
+  type          MessageType @default(Text)
 
   sender   User @relation(name: "SentMessage", fields: [senderId], references: [id])
   receiver User @relation(name: "ReceivedMessage", fields: [receiverId], references: [id])
@@ -104,10 +105,10 @@ enum MessageType {
   Video
   Image
   Text
-  SystemOrder
-  SystemApprove
-  SystemReject
-  SystemComplete
+  ReservationOrder
+  ReservationApprove
+  ReservationReject
+  ReservationComplete
 }
 
 model Package {

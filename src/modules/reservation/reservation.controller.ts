@@ -5,7 +5,7 @@ import { inject, injectable } from 'inversify'
 import BadRequestException from '../../helpers/errors/bad-request.exception'
 import { noContent } from '../../helpers/utils'
 
-import { ResponseWithUser } from '../../types'
+import { ResponseWithUser, UserWithRole } from '../../types'
 import { PrismaService } from '../prisma/prisma.service'
 
 @injectable()
@@ -15,9 +15,7 @@ export class ReservationController {
     @inject(ReservationService) private readonly reservationService: ReservationService
   ) {}
 
-  public createReservation = async (req: Request, res: ResponseWithUser) => {
-    const user = res.locals.user
-
+  private noReentrancy = async (user: UserWithRole, callBack: () => Promise<void>) => {
     if (user.lockPayment) throw new BadRequestException('Payment is already locked')
 
     await this.prismaService.client.user.update({
@@ -30,7 +28,7 @@ export class ReservationController {
     })
 
     try {
-      await this.reservationService.createReservation(user, res.locals.requestData)
+      await callBack()
     } finally {
       await this.prismaService.client.user.update({
         where: {
@@ -41,6 +39,14 @@ export class ReservationController {
         }
       })
     }
+  }
+
+  public createReservation = async (req: Request, res: ResponseWithUser) => {
+    const user = res.locals.user
+
+    await this.noReentrancy(user, async () => {
+      await this.reservationService.createReservation(user, res.locals.requestData)
+    })
 
     return noContent(res)
   }
@@ -53,13 +59,21 @@ export class ReservationController {
 
   public rejectReservation = async (req: Request, res: ResponseWithUser) => {
     const user = res.locals.user
-    await this.reservationService.rejectReservation(user, res.locals.requestData)
+
+    await this.noReentrancy(user, async () => {
+      await this.reservationService.rejectReservation(user, res.locals.requestData)
+    })
+
     return noContent(res)
   }
 
   public completeReservation = async (req: Request, res: ResponseWithUser) => {
     const user = res.locals.user
-    await this.reservationService.completeReservation(user, res.locals.requestData)
+
+    await this.noReentrancy(user, async () => {
+      await this.reservationService.completeReservation(user, res.locals.requestData)
+    })
+
     return noContent(res)
   }
 }

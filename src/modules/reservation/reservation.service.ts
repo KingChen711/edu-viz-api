@@ -185,6 +185,13 @@ export class ReservationService {
       }
     })
 
+    await this.prismaService.client.user.update({
+      where: { id: reservation.studentId },
+      data: {
+        balance: reservation.student.balance + reservation.paidPrice
+      }
+    })
+
     await this.chatService.createReservationRejectMessage(
       reservation.studentId,
       reservation.package.tutorId,
@@ -234,6 +241,13 @@ export class ReservationService {
           content,
           value
         }
+      }
+    })
+
+    await this.prismaService.client.user.update({
+      where: { id: reservation.package.tutorId },
+      data: {
+        balance: reservation.package.tutor.balance + reservation.paidPrice
       }
     })
 

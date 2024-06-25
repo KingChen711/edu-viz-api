@@ -9,7 +9,7 @@ import {
 } from './reservation.validation'
 import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node'
 import express from 'express'
-import { authorize } from 'src/middleware/authorize.middleware'
+import { authorize } from '../../middleware/authorize.middleware'
 
 import { container } from '../../config/inversify.config'
 

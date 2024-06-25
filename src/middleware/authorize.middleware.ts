@@ -18,6 +18,8 @@ const authorize = (roles?: Role[]) => async (req: WithAuthProp<Request>, res: Re
 
     if (!clerkId) throw new UnauthorizedException('Invalid Token')
 
+    console.log({ clerkId })
+
     const userService = container.get(UserService)
     const user = await userService.getUserByClerkIdWithRole(clerkId)
     if (!user) throw new UnauthorizedException('Invalid Token')

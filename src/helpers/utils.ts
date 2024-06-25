@@ -51,3 +51,7 @@ export function replacePlaceholders(template: string, data: { [key: string]: str
 export function toDateTime(isoString: Date): string {
   return format(isoString, 'PPP p')
 }
+
+export function toHubUserId(userId1: string, userId2: string) {
+  return userId1 > userId2 ? [userId1, userId2] : [userId2, userId1]
+}

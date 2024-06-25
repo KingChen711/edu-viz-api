@@ -1,5 +1,6 @@
 import { Container } from 'inversify'
 
+import { ChatService } from '../modules/chat/chat.service'
 import { ClerkController } from '../modules/clerk/clerk.controller'
 import { PackageController } from '../modules/package/package.controller'
 import { PackageService } from '../modules/package/package.service'
@@ -33,5 +34,7 @@ container.bind(ReservationController).toSelf().inRequestScope()
 
 container.bind(TutorService).toSelf().inRequestScope()
 container.bind(TutorController).toSelf().inRequestScope()
+
+container.bind(ChatService).toSelf().inRequestScope()
 
 export { container }

@@ -71,7 +71,7 @@ model Hub {
   createdAt     DateTime @default(now())
   lastMessageAt DateTime @default(now())
 
-  userIds String[] @db.ObjectId
+  userIds String[] @unique @db.ObjectId
 
   users    User[]    @relation(fields: [userIds], references: [id])
   messages Message[]
@@ -91,12 +91,23 @@ model Message {
   image   String?
   video   String?
   content String?
+  type    MessageType @default(Text)
 
   sender   User @relation(name: "SentMessage", fields: [senderId], references: [id])
   receiver User @relation(name: "ReceivedMessage", fields: [receiverId], references: [id])
   hub      Hub  @relation(fields: [hubId], references: [id])
 
   @@map("messages")
+}
+
+enum MessageType {
+  Video
+  Image
+  Text
+  SystemOrder
+  SystemApprove
+  SystemReject
+  SystemComplete
 }
 
 model Package {

@@ -5,12 +5,16 @@ import { inject, injectable } from 'inversify'
 import BadRequestException from '../../helpers/errors/bad-request.exception'
 
 import { UserWithRole } from '../../types'
+import { ChatService } from '../chat/chat.service'
 import { TGetFeedbacksSchema } from '../package/package.validation'
 import { PrismaService } from '../prisma/prisma.service'
 
 @injectable()
 export class ReservationService {
-  constructor(@inject(PrismaService) private readonly prismaService: PrismaService) {}
+  constructor(
+    @inject(PrismaService) private readonly prismaService: PrismaService,
+    @inject(ChatService) private readonly chatService: ChatService
+  ) {}
 
   public getFeedbacks = async (schema: TGetFeedbacksSchema) => {
     const {
@@ -47,7 +51,10 @@ export class ReservationService {
     }
 
     const _package = await this.prismaService.client.package.findUnique({
-      where: { id: packageId }
+      where: { id: packageId },
+      include: {
+        tutor: true
+      }
     })
 
     if (!_package) {
@@ -77,6 +84,8 @@ export class ReservationService {
         paidPrice: _package.pricePerHour * duration
       }
     })
+
+    await this.chatService.createSystemOrderMessage(user.id, _package.tutor.id)
 
     //TODO: auto reject reservation in 1 hour if not approve
   }

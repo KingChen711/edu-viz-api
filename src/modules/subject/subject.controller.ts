@@ -1,6 +1,6 @@
-import { inject, injectable } from 'inversify'
 import { SubjectService } from './subject.service'
 import { Request, Response } from 'express'
+import { inject, injectable } from 'inversify'
 
 import { ok } from '../../helpers/utils'
 

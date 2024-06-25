@@ -1,20 +1,21 @@
-import { injectable } from 'inversify'
-import { Package, PackageDoc, PackageStatus } from './package.model'
 import { TGetPackageSchema, TGetPackagesSchema } from './package.validation'
-import { FilterQuery, Types } from 'mongoose'
+import { Feedback, PackageStatus, Prisma } from '@prisma/client'
+import { inject, injectable } from 'inversify'
+
 import { PagedList } from '../../helpers/paged-list'
-import { Role, UserWithRole } from '../../types'
-import NotFoundException from 'src/helpers/errors/not-found.exception'
 import ForbiddenException from 'src/helpers/errors/forbidden-exception'
+import NotFoundException from 'src/helpers/errors/not-found.exception'
+
+import { Role, UserWithRole } from '../../types'
+import { PrismaService } from '../prisma/prisma.service'
 
 @injectable()
 export class PackageService {
-  constructor() {}
-  private sortMapping = {
-    'highest-price': { pricePerHour: -1 },
-    'lowest-price': { pricePerHour: 1 },
-    'highest-rating': { avgFeedbackValue: -1 },
-    newest: { createdAt: -1 }
+  constructor(@inject(PrismaService) private readonly prismaService: PrismaService) {}
+  private sortMapping: Record<string, Prisma.PackageOrderByWithRelationInput> = {
+    'highest-price': { pricePerHour: 'desc' },
+    'lowest-price': { pricePerHour: 'asc' },
+    newest: { createdAt: 'desc' }
   } as const
 
   public getPackages = async (schema: TGetPackagesSchema) => {
@@ -22,67 +23,75 @@ export class PackageService {
       query: { pageNumber, pageSize, sort, subjectId, search, status }
     } = schema
 
-    const subjectFilter: FilterQuery<PackageDoc> = subjectId ? { subjectId: new Types.ObjectId(subjectId) } : {}
+    const subjectFilter: Prisma.PackageWhereInput = subjectId ? {} : {}
 
-    const statusFilter: FilterQuery<PackageDoc> = status !== 'All' ? { status } : {}
+    const statusFilter: Prisma.PackageWhereInput = status !== 'All' ? { status } : {}
 
-    const searchFilter: FilterQuery<PackageDoc> = search
+    const searchFilter: Prisma.PackageWhereInput = search
       ? {
-          $or: [
-            { 'subject.name': { $regex: search, $options: 'i' } },
-            { 'tutor.fullName': { $regex: search, $options: 'i' } },
-            { 'tutor.email': { $regex: search, $options: 'i' } }
+          OR: [
+            {
+              subject: {
+                name: {
+                  contains: search,
+                  mode: 'insensitive'
+                }
+              }
+            },
+            {
+              tutor: {
+                fullName: {
+                  contains: search,
+                  mode: 'insensitive'
+                }
+              }
+            },
+            {
+              tutor: {
+                email: {
+                  contains: search,
+                  mode: 'insensitive'
+                }
+              }
+            }
           ]
         }
       : {}
 
-    const $match: FilterQuery<PackageDoc> = { $and: [subjectFilter, searchFilter, statusFilter] }
+    const query: Prisma.PackageFindManyArgs = { where: { AND: [subjectFilter, searchFilter, statusFilter] } }
 
-    // Aggregation pipeline stages
-    const pipeLines = [
-      { $lookup: { from: 'subjects', localField: 'subjectId', foreignField: '_id', as: 'subject' } },
-      { $unwind: '$subject' },
-      { $lookup: { from: 'users', localField: 'tutorId', foreignField: '_id', as: 'tutor' } },
-      { $unwind: '$tutor' },
-      { $lookup: { from: 'reservations', localField: '_id', foreignField: 'packageId', as: 'reservations' } },
-      { $match },
-      {
-        $project: {
-          subjectId: 1,
-          tutorId: 1,
-          pricePerHour: 1,
-          images: 1,
-          video: 1,
-          status: 1,
-          createdAt: 1,
-          'subject.name': 1,
-          'tutor.fullName': 1,
-          'tutor.email': 1,
-          'tutor.avatar': 1,
-          'tutor.tutor.isAvailable': 1,
-          totalReservations: { $size: '$reservations' }, // Calculate total reservations per package
-          avgFeedbackValue: { $avg: '$reservations.feedback.value' } // Calculate average feedback value
-        }
+    if (sort && sort in this.sortMapping) {
+      query.orderBy = this.sortMapping[sort]
+    }
+
+    const packages = await this.prismaService.client.package.findMany({
+      ...query,
+      include: {
+        subject: true,
+        tutor: true,
+        reservations: true
       }
-    ]
+    })
 
-    const totalCountResult = await Package.aggregate([
-      ...pipeLines,
-      {
-        $count: 'total'
-      }
-    ])
+    const mappedPackages = packages.map((_package) => {
+      const feedbacks = _package.reservations.filter((r) => r.feedback).map((r) => r.feedback) as Feedback[]
 
-    const packages = await Package.aggregate([
-      ...pipeLines,
-      { $sort: this.sortMapping[sort] },
-      { $skip: (pageNumber - 1) * pageSize },
-      { $limit: pageSize }
-    ])
+      const averageFeedbacksValue =
+        feedbacks.reduce((totalFeedbackValue, currentFeedback) => totalFeedbackValue + currentFeedback.value, 0) /
+        feedbacks.length
 
-    const totalCount = totalCountResult[0] ? totalCountResult[0].total : 0
+      return { ..._package, totalReservations: _package.reservations.length, averageFeedbacksValue }
+    })
 
-    return new PagedList(packages, totalCount, pageNumber, pageSize)
+    if (sort === 'highest-rating') {
+      mappedPackages.toSorted((a, b) => b.averageFeedbacksValue - a.averageFeedbacksValue)
+    }
+
+    const skip = (pageNumber - 1) * pageSize
+    const take = pageSize
+    const paginatedProducts = mappedPackages.slice(skip, skip + take)
+
+    return new PagedList(paginatedProducts, packages.length, pageNumber, pageSize)
   }
 
   public getPackage = async (user: UserWithRole | null, schema: TGetPackageSchema) => {
@@ -90,46 +99,12 @@ export class PackageService {
       params: { id }
     } = schema
 
-    const packageResult = await Package.aggregate([
-      {
-        $lookup: {
-          from: 'reservations',
-          localField: '_id',
-          foreignField: 'packageId',
-          as: 'reservations'
-        }
-      },
-      {
-        $lookup: {
-          from: 'subjects',
-          localField: 'subjectId',
-          foreignField: '_id',
-          as: 'subject'
-        }
-      },
-      { $unwind: '$subject' },
-      {
-        $match: {
-          _id: new Types.ObjectId(id)
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          subjectId: 1,
-          tutorId: 1,
-          pricePerHour: 1,
-          status: 1,
-          'subject.name': 1,
-          'subject.image': 1,
-          'subject.description': 1,
-          totalReservations: { $size: '$reservations' }, // Calculate total reservations per package
-          avgFeedbackValue: { $avg: '$reservations.feedback.value' } // Calculate average feedback value
-        }
+    const _package = await this.prismaService.client.package.findUnique({
+      where: { id },
+      include: {
+        subject: true
       }
-    ])
-
-    const _package = packageResult.length > 0 ? packageResult[0] : null
+    })
 
     if (!_package) {
       throw new NotFoundException(`Not found package with id: ${id}`)
@@ -138,10 +113,22 @@ export class PackageService {
     const isAdmin = user?.role.roleName === Role.ADMIN
     const isTutorAndOwnsPackages = user?.role.roleName === Role.TUTOR && user.id === _package?.tutorId
 
-    if (_package.status !== PackageStatus.ACTIVE && !isAdmin && !isTutorAndOwnsPackages) {
+    if (_package.status !== PackageStatus.Active && !isAdmin && !isTutorAndOwnsPackages) {
       throw new ForbiddenException()
     }
 
-    return _package
+    const reservations = await this.prismaService.client.reservation.findMany({
+      where: {
+        packageId: id
+      }
+    })
+
+    const feedbacks = reservations.filter((r) => r.feedback).map((r) => r.feedback) as Feedback[]
+
+    const averageFeedbacksValue =
+      feedbacks.reduce((totalFeedbackValue, currentFeedback) => totalFeedbackValue + currentFeedback.value, 0) /
+      feedbacks.length
+
+    return { package: { ..._package, totalReservations: reservations.length, averageFeedbacksValue } }
   }
 }

@@ -1,20 +1,23 @@
-import { inject, injectable } from 'inversify'
 import { PackageService } from './package.service'
+import { TGetFeedbacksSchema, TGetPackagesSchema } from './package.validation'
+import { PackageStatus } from '@prisma/client'
 import { Request, Response } from 'express'
+import { inject, injectable } from 'inversify'
+import { Role, UserWithRole } from 'src/types'
 
 import { ok } from '../../helpers/utils'
-import { TGetFeedbacksSchema, TGetPackagesSchema } from './package.validation'
-import { Role, UserWithRole } from 'src/types'
-import { Package, PackageStatus } from './package.model'
 import ForbiddenException from 'src/helpers/errors/forbidden-exception'
-import { ReservationService } from '../reservation/reservation.service'
 import NotFoundException from 'src/helpers/errors/not-found.exception'
+
+import { PrismaService } from '../prisma/prisma.service'
+import { ReservationService } from '../reservation/reservation.service'
 
 @injectable()
 export class PackageController {
   constructor(
     @inject(PackageService) private readonly packageService: PackageService,
-    @inject(ReservationService) private readonly reservationService: ReservationService
+    @inject(ReservationService) private readonly reservationService: ReservationService,
+    @inject(PrismaService) private readonly prismaService: PrismaService
   ) {}
 
   public getPackages = async (req: Request, res: Response) => {
@@ -23,7 +26,7 @@ export class PackageController {
       query: { status }
     } = res.locals.requestData as TGetPackagesSchema
 
-    if (status !== PackageStatus.ACTIVE && user?.role.roleName !== Role.ADMIN) {
+    if (status !== PackageStatus.Active && user?.role.roleName !== Role.ADMIN) {
       throw new ForbiddenException()
     }
 
@@ -44,7 +47,7 @@ export class PackageController {
     const {
       params: { packageId }
     } = res.locals.requestData as TGetFeedbacksSchema
-    const _package = await Package.findOne({ _id: packageId })
+    const _package = await this.prismaService.client.package.findUnique({ where: { id: packageId } })
 
     if (!_package) {
       throw new NotFoundException(`Not found packaged with id: ${packageId}`)
@@ -53,7 +56,7 @@ export class PackageController {
     const isAdmin = user?.role.roleName === Role.ADMIN
     const isTutorAndOwnsPackages = user?.role.roleName === Role.TUTOR && user.id === _package?.tutorId
 
-    if (_package.status !== PackageStatus.ACTIVE && !isAdmin && !isTutorAndOwnsPackages) {
+    if (_package.status !== PackageStatus.Active && !isAdmin && !isTutorAndOwnsPackages) {
       throw new ForbiddenException()
     }
 

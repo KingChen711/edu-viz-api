@@ -1,12 +1,16 @@
 import 'dotenv/config'
+
+import { WebhookEvent } from '@clerk/clerk-sdk-node'
 import { Request, Response } from 'express'
 import { inject, injectable } from 'inversify'
+import { Role } from 'src/types'
 import { Webhook } from 'svix'
-import { WebhookEvent } from '@clerk/clerk-sdk-node'
-import { UserService } from '../user/user.service'
-import InternalServerErrorException from '../../helpers/errors/internal-server-error.exception'
+
 import BadRequestException from '../../helpers/errors/bad-request.exception'
+import InternalServerErrorException from '../../helpers/errors/internal-server-error.exception'
 import { created, ok } from '../../helpers/utils'
+
+import { UserService } from '../user/user.service'
 
 @injectable()
 export class ClerkController {
@@ -64,11 +68,16 @@ export class ClerkController {
         return created(res, user)
       }
 
-      const user = await this.userService.createUserStudent({
+      const user = await this.userService.createUser({
         clerkId: id,
         email: email_addresses[0].email_address,
         fullName: `${first_name}${last_name ? ` ${last_name}` : ''}`,
-        avatar: image_url
+        avatar: image_url,
+        role: {
+          connect: {
+            roleName: Role.STUDENT
+          }
+        }
       })
       return created(res, user)
     }

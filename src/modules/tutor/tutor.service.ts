@@ -1,27 +1,39 @@
-import { injectable } from 'inversify'
 import { TGetTutorSchema } from './tutor.validation'
-import { User } from '../user/user.model'
-
+import { PackageStatus } from '@prisma/client'
+import { inject, injectable } from 'inversify'
 import { Role, UserWithRole } from 'src/types'
+
 import BadRequestException from 'src/helpers/errors/bad-request.exception'
-import { Package, PackageDoc, PackageStatus } from '../package/package.model'
+import NotFoundException from 'src/helpers/errors/not-found.exception'
+
+import { PrismaService } from '../prisma/prisma.service'
 
 @injectable()
 export class TutorService {
-  constructor() {}
+  constructor(@inject(PrismaService) private readonly prismaService: PrismaService) {}
 
   public getTutor = async (user: UserWithRole | null, schema: TGetTutorSchema) => {
     const {
       params: { id }
     } = schema
 
-    const tutor = (await User.findOne({ _id: id }).populate('packages').populate('role')) as
-      | (UserWithRole & {
-          packages: PackageDoc[]
-        })
-      | null
+    const tutor = await this.prismaService.client.user.findUnique({
+      where: { id },
+      include: {
+        role: true,
+        packages: {
+          include: {
+            subject: true
+          }
+        }
+      }
+    })
 
-    if (tutor?.role.roleName !== Role.TUTOR) {
+    if (!tutor) {
+      throw new NotFoundException(`Not found tutor with id: ${id}`)
+    }
+
+    if (tutor.role.roleName !== Role.TUTOR) {
       throw new BadRequestException('This user is not a tutor')
     }
 
@@ -29,13 +41,8 @@ export class TutorService {
     const isTutorAndOwnsPackages = user?.role.roleName === Role.TUTOR && user.id === id
 
     if (!isAdmin && !isTutorAndOwnsPackages) {
-      tutor.packages = tutor.packages.filter((p) => p.status === PackageStatus.ACTIVE)
+      tutor.packages = tutor.packages.filter((p) => p.status === PackageStatus.Active)
     }
-
-    //load subject name
-    const packageIds = tutor.packages.map((p) => p.id)
-    const packages = await Package.find({ _id: { $in: packageIds } }).populate('subject')
-    tutor.packages = packages
 
     return tutor
   }

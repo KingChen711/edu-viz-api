@@ -1,16 +1,20 @@
 import { Container } from 'inversify'
+
 import { ClerkController } from '../modules/clerk/clerk.controller'
+import { PackageController } from '../modules/package/package.controller'
+import { PackageService } from '../modules/package/package.service'
+import { PrismaService } from '../modules/prisma/prisma.service'
+import { ReservationService } from '../modules/reservation/reservation.service'
+import { SubjectController } from '../modules/subject/subject.controller'
+import { SubjectService } from '../modules/subject/subject.service'
+import { TutorController } from '../modules/tutor/tutor.controller'
+import { TutorService } from '../modules/tutor/tutor.service'
 import { UserController } from '../modules/user/user.controller'
 import { UserService } from '../modules/user/user.service'
-import { SubjectService } from '../modules/subject/subject.service'
-import { SubjectController } from '../modules/subject/subject.controller'
-import { PackageService } from '../modules/package/package.service'
-import { PackageController } from '../modules/package/package.controller'
-import { TutorService } from '../modules/tutor/tutor.service'
-import { TutorController } from '../modules/tutor/tutor.controller'
-import { ReservationService } from '../modules/reservation/reservation.service'
 
 const container = new Container()
+
+container.bind(PrismaService).toSelf().inRequestScope()
 
 container.bind(ClerkController).toSelf().inRequestScope()
 

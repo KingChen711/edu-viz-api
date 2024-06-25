@@ -1,31 +1,44 @@
-import { injectable } from 'inversify'
+import { Prisma } from '@prisma/client'
+import { inject, injectable } from 'inversify'
+
 import { Role as ERole, UserWithRole } from '../../types'
-import { User, UserDoc } from './user.model'
-import { Role } from './role.model'
-import InternalServerErrorException from '../../helpers/errors/internal-server-error.exception'
+import { PrismaService } from '../prisma/prisma.service'
 
 @injectable()
 export class UserService {
-  constructor() {}
+  constructor(@inject(PrismaService) private readonly prismaService: PrismaService) {}
 
   public getUserByClerkIdWithRole = async (clerkId: string): Promise<UserWithRole | null> =>
-    (await User.findOne({ clerkId }).populate('role')) as UserWithRole
+    await this.prismaService.client.user.findUnique({
+      where: {
+        clerkId
+      },
+      include: {
+        role: true
+      }
+    })
 
-  public getUserEmail = async (email: string) => await User.findOne({ email })
+  public getUserEmail = async (email: string) =>
+    await this.prismaService.client.user.findUnique({
+      where: {
+        email
+      }
+    })
 
-  public createUserStudent = async (user: Partial<UserDoc>) => {
-    const studentRole = await Role.findOne({ roleName: ERole.STUDENT })
+  public createUser = async (user: Prisma.UserCreateInput) =>
+    await this.prismaService.client.user.create({
+      data: user
+    })
 
-    if (!studentRole) {
-      throw new InternalServerErrorException('Missing student role in Db')
-    }
+  public updateUserByClerkId = async (clerkId: string, user: Prisma.UserUpdateInput) =>
+    await this.prismaService.client.user.update({
+      where: { clerkId },
+      data: user
+    })
 
-    return await User.create({ ...user, roleId: studentRole.id })
-  }
-
-  public updateUserByClerkId = async (clerkId: string, user: Partial<UserDoc>) =>
-    await User.findOneAndUpdate({ clerkId }, user)
-
-  public updateUserByEmail = async (email: string, user: Partial<UserDoc>) =>
-    await User.findOneAndUpdate({ email }, user)
+  public updateUserByEmail = async (email: string, user: Prisma.UserUpdateInput) =>
+    await this.prismaService.client.user.update({
+      where: { email },
+      data: user
+    })
 }

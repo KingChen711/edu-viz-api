@@ -1,9 +1,10 @@
-import { injectable } from 'inversify'
-import { Subject } from './subject.model'
+import { inject, injectable } from 'inversify'
+
+import { PrismaService } from '../prisma/prisma.service'
 
 @injectable()
 export class SubjectService {
-  constructor() {}
+  constructor(@inject(PrismaService) private readonly prismaService: PrismaService) {}
 
-  public getAllSubjects = async () => await Subject.find()
+  public getAllSubjects = async () => await this.prismaService.client.subject.findMany()
 }

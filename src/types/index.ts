@@ -1,6 +1,5 @@
+import { Role as TRole, User } from '@prisma/client'
 import { Response } from 'express'
-import { RoleDoc } from '../modules/user/role.model'
-import { UserDoc } from '../modules/user/user.model'
 
 export enum Role {
   STUDENT = 'Student',
@@ -8,7 +7,7 @@ export enum Role {
   ADMIN = 'Admin'
 }
 
-export type UserWithRole = UserDoc & { role: RoleDoc }
+export type UserWithRole = User & { role: TRole }
 
 export type ResponseWithUser = Response & {
   locals: {

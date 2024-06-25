@@ -1,6 +1,6 @@
-import { inject, injectable } from 'inversify'
 import { TutorService } from './tutor.service'
 import { Request, Response } from 'express'
+import { inject, injectable } from 'inversify'
 
 import { ok } from '../../helpers/utils'
 

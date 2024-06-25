@@ -1,8 +1,5 @@
 import { isValidObjectId } from 'mongoose'
 import z from 'zod'
-import { PackageStatus } from './package.model'
-
-PackageStatus
 
 export const getPackagesSchema = z.object({
   query: z.object({
@@ -34,13 +31,6 @@ export type TGetPackageSchema = z.infer<typeof getPackageSchema>
 export const getFeedbacksSchema = z.object({
   params: z.object({
     packageId: z.string().refine((data) => !data || isValidObjectId(data), 'Invalid id')
-  }),
-  query: z.object({
-    pageNumber: z.coerce.number().catch(1),
-    pageSize: z.coerce
-      .number()
-      .catch(5)
-      .transform((data) => Math.min(data, 50))
   })
 })
 

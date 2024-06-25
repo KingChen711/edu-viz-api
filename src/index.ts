@@ -1,22 +1,25 @@
 import 'dotenv/config'
+
 import 'reflect-metadata'
+
 import 'express-async-errors'
+
 import corsMiddleware from './middleware/cors.middleware'
 import errorHandlingMiddleware from './middleware/error-handling.middleware'
 import multerErrorHandlingMiddleware from './middleware/multer-error-handling.middleware'
 import { clerkRoute } from './modules/clerk/clerk.route'
+import { packageRoute } from './modules/package/package.route'
+import { subjectRoute } from './modules/subject/subject.route'
+import { tutorRoute } from './modules/tutor/tutor.route'
 import { userRoute } from './modules/user/user.route'
 import bodyParser from 'body-parser'
 import express from 'express'
 import helmet from 'helmet'
-import morgan from 'morgan'
 import mongoose from 'mongoose'
+import morgan from 'morgan'
+
 import NotFoundException from './helpers/errors/not-found.exception'
 import { ok } from './helpers/utils'
-import { subjectRoute } from './modules/subject/subject.route'
-import { User } from './modules/user/user.model'
-import { packageRoute } from './modules/package/package.route'
-import { tutorRoute } from './modules/tutor/tutor.route'
 
 //!Just for development
 const DELAY = 0
@@ -43,8 +46,7 @@ app.use('/api/packages', packageRoute)
 app.use('/api/tutors', tutorRoute)
 
 app.get('/', async (req, res) => {
-  const user = await User.findOne().populate('role')
-  return ok(res, { user })
+  return ok(res, { message: 'Hello World' })
 })
 
 app.all('*', () => {

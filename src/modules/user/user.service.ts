@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client'
 import { inject, injectable } from 'inversify'
 
-import { Role as ERole, UserWithRole } from '../../types'
+import { UserWithRole } from '../../types'
 import { PrismaService } from '../prisma/prisma.service'
 
 @injectable()

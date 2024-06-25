@@ -3,12 +3,12 @@ import { TGetFeedbacksSchema, TGetPackagesSchema } from './package.validation'
 import { PackageStatus } from '@prisma/client'
 import { Request, Response } from 'express'
 import { inject, injectable } from 'inversify'
-import { Role, UserWithRole } from 'src/types'
 
+import ForbiddenException from '../../helpers/errors/forbidden-exception'
+import NotFoundException from '../../helpers/errors/not-found.exception'
 import { ok } from '../../helpers/utils'
-import ForbiddenException from 'src/helpers/errors/forbidden-exception'
-import NotFoundException from 'src/helpers/errors/not-found.exception'
 
+import { Role, UserWithRole } from '../../types'
 import { PrismaService } from '../prisma/prisma.service'
 import { ReservationService } from '../reservation/reservation.service'
 

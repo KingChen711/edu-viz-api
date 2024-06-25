@@ -2,9 +2,9 @@ import { TGetPackageSchema, TGetPackagesSchema } from './package.validation'
 import { Feedback, PackageStatus, Prisma } from '@prisma/client'
 import { inject, injectable } from 'inversify'
 
+import ForbiddenException from '../../helpers/errors/forbidden-exception'
+import NotFoundException from '../../helpers/errors/not-found.exception'
 import { PagedList } from '../../helpers/paged-list'
-import ForbiddenException from 'src/helpers/errors/forbidden-exception'
-import NotFoundException from 'src/helpers/errors/not-found.exception'
 
 import { Role, UserWithRole } from '../../types'
 import { PrismaService } from '../prisma/prisma.service'

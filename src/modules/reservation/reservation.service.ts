@@ -1,6 +1,4 @@
-import { Prisma } from '@prisma/client'
 import { inject, injectable } from 'inversify'
-import { Types } from 'mongoose'
 
 import { TGetFeedbacksSchema } from '../package/package.validation'
 import { PrismaService } from '../prisma/prisma.service'

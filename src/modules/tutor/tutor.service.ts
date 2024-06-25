@@ -1,11 +1,11 @@
 import { TGetTutorSchema } from './tutor.validation'
 import { PackageStatus } from '@prisma/client'
 import { inject, injectable } from 'inversify'
-import { Role, UserWithRole } from 'src/types'
 
-import BadRequestException from 'src/helpers/errors/bad-request.exception'
-import NotFoundException from 'src/helpers/errors/not-found.exception'
+import BadRequestException from '../../helpers/errors/bad-request.exception'
+import NotFoundException from '../../helpers/errors/not-found.exception'
 
+import { Role, UserWithRole } from '../../types'
 import { PrismaService } from '../prisma/prisma.service'
 
 @injectable()

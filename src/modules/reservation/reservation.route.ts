@@ -5,10 +5,10 @@ import { ReservationController } from './reservation.controller'
 import { createReservationSchema } from './reservation.validation'
 import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node'
 import express from 'express'
+import { authorize } from 'src/middleware/authorize.middleware'
 
 import { container } from '../../config/inversify.config'
 
-import { authorize } from '../../middleware/authorize.middleware'
 import { validateRequestData } from '../../middleware/validate-request-data.middleware'
 import { Role } from '../../types'
 

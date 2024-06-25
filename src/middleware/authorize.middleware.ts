@@ -14,24 +14,15 @@ import { Role } from '../types'
 //*required token(user) and optional check roles
 const authorize = (roles?: Role[]) => async (req: WithAuthProp<Request>, res: Response, next: NextFunction) => {
   try {
-    console.log(1)
+    const clerkId = req?.auth?.userId
 
-    if (!req.auth.sessionId) throw new UnauthorizedException('Invalid Token')
-
-    const clerkId = req.auth.userId
     if (!clerkId) throw new UnauthorizedException('Invalid Token')
-    console.log(2)
-
-    console.log({ clerkId })
 
     const userService = container.get(UserService)
     const user = await userService.getUserByClerkIdWithRole(clerkId)
     if (!user) throw new UnauthorizedException('Invalid Token')
 
-    console.log(3)
-
     res.locals.user = user
-    console.log({ user })
 
     if (!roles) return next() //mean that just the token is required, every roles is allowed, middleware can go next
 

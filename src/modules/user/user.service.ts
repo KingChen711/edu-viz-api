@@ -19,7 +19,7 @@ export class UserService {
     })
 
   public getUserEmail = async (email: string) =>
-    await this.prismaService.client.user.findUnique({
+    await this.prismaService.client.user.findFirst({
       where: {
         email
       }

@@ -13,6 +13,8 @@ import { TutorController } from '../modules/tutor/tutor.controller'
 import { TutorService } from '../modules/tutor/tutor.service'
 import { UserController } from '../modules/user/user.controller'
 import { UserService } from '../modules/user/user.service'
+import { ChatController } from '../modules/chat/chat.controller'
+import { SocketService } from '../modules/chat/socket.service'
 
 const container = new Container()
 
@@ -35,6 +37,8 @@ container.bind(ReservationController).toSelf().inRequestScope()
 container.bind(TutorService).toSelf().inRequestScope()
 container.bind(TutorController).toSelf().inRequestScope()
 
+container.bind(SocketService).toSelf().inRequestScope()
 container.bind(ChatService).toSelf().inRequestScope()
+container.bind(ChatController).toSelf().inRequestScope()
 
 export { container }

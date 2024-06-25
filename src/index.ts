@@ -18,6 +18,8 @@ import express from 'express'
 import helmet from 'helmet'
 import mongoose from 'mongoose'
 import morgan from 'morgan'
+import http from 'http'
+import { Server } from 'socket.io'
 
 import NotFoundException from './helpers/errors/not-found.exception'
 import { ok } from './helpers/utils'
@@ -26,6 +28,8 @@ import { ok } from './helpers/utils'
 const DELAY = 0
 
 const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 
 app.use((req, res, next) => {
   setTimeout(next, DELAY)
@@ -69,11 +73,12 @@ const bootstrap = async () => {
     console.error(error)
   }
 
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Listening on port ${PORT}!!!`)
   })
 }
 
 bootstrap()
 
+export { io }
 export default app

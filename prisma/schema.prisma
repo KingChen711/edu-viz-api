@@ -24,14 +24,15 @@ enum ERole {
 }
 
 model User {
-  id       String   @id @default(auto()) @map("_id") @db.ObjectId
-  roleId   String   @db.ObjectId
-  clerkId  String?  @unique
-  email    String   @unique
-  fullName String
-  avatar   String   @default("/images/default-avatar.png")
-  hubIds   String[] @db.ObjectId
-  balance  Int      @default(0)
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  roleId      String   @db.ObjectId
+  clerkId     String?  @unique
+  email       String   @unique
+  fullName    String
+  avatar      String   @default("/images/default-avatar.png")
+  hubIds      String[] @db.ObjectId
+  balance     Int      @default(0)
+  lockPayment Boolean  @default(false)
 
   tutor Tutor?
 

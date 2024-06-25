@@ -9,6 +9,7 @@ import errorHandlingMiddleware from './middleware/error-handling.middleware'
 import multerErrorHandlingMiddleware from './middleware/multer-error-handling.middleware'
 import { clerkRoute } from './modules/clerk/clerk.route'
 import { packageRoute } from './modules/package/package.route'
+import { reservationRoute } from './modules/reservation/reservation.route'
 import { subjectRoute } from './modules/subject/subject.route'
 import { tutorRoute } from './modules/tutor/tutor.route'
 import { userRoute } from './modules/user/user.route'
@@ -44,6 +45,7 @@ app.use('/api/users', userRoute)
 app.use('/api/subjects', subjectRoute)
 app.use('/api/packages', packageRoute)
 app.use('/api/tutors', tutorRoute)
+app.use('/api/reservations', reservationRoute)
 
 app.get('/', async (req, res) => {
   return ok(res, { message: 'Hello World' })

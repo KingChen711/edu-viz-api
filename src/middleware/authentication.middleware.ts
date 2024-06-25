@@ -28,6 +28,8 @@ const authentication =
 
       res.locals.user = user
 
+      console.log({ user })
+
       next()
     } catch (error) {
       console.log(error)

@@ -58,7 +58,7 @@ export class PackageService {
         }
       : {}
 
-    const query: Prisma.PackageFindManyArgs = { where: { AND: [subjectFilter, searchFilter, statusFilter] } }
+    const query: Prisma.PackageFindManyArgs = { where: { AND: [subjectFilter, statusFilter, searchFilter] } }
 
     if (sort && sort in this.sortMapping) {
       query.orderBy = this.sortMapping[sort]
@@ -76,11 +76,19 @@ export class PackageService {
     const mappedPackages = packages.map((_package) => {
       const feedbacks = _package.reservations.filter((r) => r.feedback).map((r) => r.feedback) as Feedback[]
 
-      const averageFeedbacksValue =
-        feedbacks.reduce((totalFeedbackValue, currentFeedback) => totalFeedbackValue + currentFeedback.value, 0) /
-        feedbacks.length
+      const averageFeedbacksValue = Number(
+        (
+          feedbacks.reduce((totalFeedbackValue, currentFeedback) => totalFeedbackValue + currentFeedback.value, 0) /
+          feedbacks.length
+        ).toFixed(1)
+      )
 
-      return { ..._package, totalReservations: _package.reservations.length, averageFeedbacksValue }
+      return {
+        ..._package,
+        reservations: undefined,
+        totalReservations: _package.reservations.length,
+        averageFeedbacksValue
+      }
     })
 
     if (sort === 'highest-rating') {
@@ -125,10 +133,11 @@ export class PackageService {
 
     const feedbacks = reservations.filter((r) => r.feedback).map((r) => r.feedback) as Feedback[]
 
-    const averageFeedbacksValue =
+    const averageFeedbacksValue = Number(
       feedbacks.reduce((totalFeedbackValue, currentFeedback) => totalFeedbackValue + currentFeedback.value, 0) /
-      feedbacks.length
+        feedbacks.length
+    ).toFixed(1)
 
-    return { package: { ..._package, totalReservations: reservations.length, averageFeedbacksValue } }
+    return { ..._package, totalReservations: reservations.length, averageFeedbacksValue }
   }
 }

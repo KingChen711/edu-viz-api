@@ -1,8 +1,10 @@
 import { ChatService } from './chat.service'
+import { HubService } from './hub.service'
 import { SocketService } from './socket.service'
-import { Request, Response } from 'express'
+import { Request } from 'express'
 import { inject, injectable } from 'inversify'
 import { Socket } from 'socket.io'
+import { ResponseWithUser } from 'src/types'
 
 import { ok } from '../../helpers/utils'
 
@@ -10,6 +12,7 @@ import { ok } from '../../helpers/utils'
 export class ChatController {
   constructor(
     @inject(ChatService) private readonly chatService: ChatService,
+    @inject(ChatService) private readonly hubService: HubService,
     @inject(SocketService) private readonly socketService: SocketService
   ) {}
 
@@ -23,7 +26,15 @@ export class ChatController {
     socket.on('disconnect', () => console.log('A user disconnected'))
   }
 
-  public sendMessage = async (req: Request, res: Response) => {
-    return ok(res)
+  public getHubs = async (req: Request, res: ResponseWithUser) => {
+    const user = res.locals.user
+    const hubs = await this.hubService.getHubs(user)
+    return ok(res, hubs)
+  }
+
+  public getHub = async (req: Request, res: ResponseWithUser) => {
+    const user = res.locals.user
+    const hubs = await this.hubService.getHub(user, res.locals.requestData)
+    return ok(res, hubs)
   }
 }

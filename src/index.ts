@@ -58,7 +58,7 @@ app.use('/api/subjects', subjectRoute)
 app.use('/api/packages', packageRoute)
 app.use('/api/tutors', tutorRoute)
 app.use('/api/reservations', reservationRoute)
-app.use('/api/chats', chatRoute)
+app.use('/api/chat', chatRoute)
 
 app.get('/', async (req, res) => {
   return ok(res, { message: 'Hello World' })

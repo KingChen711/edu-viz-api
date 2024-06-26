@@ -1,12 +1,18 @@
 import { ChatController } from './chat.controller'
+import { getHubSchema } from './chat.validation'
+import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node'
 import express from 'express'
 
 import { container } from '../../config/inversify.config'
+
+import { authorize } from '../../middleware/authorize.middleware'
+import { validateRequestData } from '../../middleware/validate-request-data.middleware'
 
 const router = express.Router()
 
 const chatController = container.get(ChatController)
 
-router.get('/', chatController.sendMessage)
+router.get('/hubs', ClerkExpressWithAuth(), authorize(), chatController.getHubs)
+router.get('/hubs/:id', ClerkExpressWithAuth(), authorize(), validateRequestData(getHubSchema), chatController.getHub)
 
 export { router as chatRoute }

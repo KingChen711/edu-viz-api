@@ -2,6 +2,7 @@ import { Container } from 'inversify'
 
 import { ChatController } from '../modules/chat/chat.controller'
 import { ChatService } from '../modules/chat/chat.service'
+import { HubService } from '../modules/chat/hub.service'
 import { SocketService } from '../modules/chat/socket.service'
 import { ClerkController } from '../modules/clerk/clerk.controller'
 import { PackageController } from '../modules/package/package.controller'
@@ -38,6 +39,7 @@ container.bind(TutorService).toSelf().inRequestScope()
 container.bind(TutorController).toSelf().inRequestScope()
 
 container.bind(SocketService).toSelf().inRequestScope()
+container.bind(HubService).toSelf().inRequestScope()
 container.bind(ChatService).toSelf().inRequestScope()
 container.bind(ChatController).toSelf().inRequestScope()
 

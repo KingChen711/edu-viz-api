@@ -98,6 +98,7 @@ model Message {
   receiver User @relation(name: "ReceivedMessage", fields: [receiverId], references: [id])
   hub      Hub  @relation(fields: [hubId], references: [id])
 
+  @@index([createdAt(sort: Desc)])
   @@map("messages")
 }
 

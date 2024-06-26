@@ -10,10 +10,7 @@ export const getPackagesSchema = z.object({
       .transform((data) => Math.min(data, 50)),
     search: z.coerce.string().trim().optional(),
     status: z.enum(['All', 'Pending', 'Reject', 'Active', 'Disable']).catch('Active'),
-    subjectId: z
-      .string()
-      .optional()
-      .refine((data) => !data || isValidObjectId(data), 'Invalid id'),
+    subjectName: z.string().optional(),
     sort: z.enum(['highest-price', 'lowest-price', 'highest-rating', 'newest']).catch('highest-rating')
   })
 })

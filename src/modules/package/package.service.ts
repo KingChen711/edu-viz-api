@@ -20,10 +20,21 @@ export class PackageService {
 
   public getPackages = async (schema: TGetPackagesSchema) => {
     const {
-      query: { pageNumber, pageSize, sort, subjectId, search, status }
+      query: { pageNumber, pageSize, sort, subjectName, search, status }
     } = schema
 
-    const subjectFilter: Prisma.PackageWhereInput = subjectId ? {} : {}
+    console.log({ subjectName })
+
+    const subjectFilter: Prisma.PackageWhereInput = subjectName
+      ? {
+          subject: {
+            name: {
+              contains: subjectName,
+              mode: 'insensitive'
+            }
+          }
+        }
+      : {}
 
     const statusFilter: Prisma.PackageWhereInput = status !== 'All' ? { status } : {}
 
@@ -139,5 +150,21 @@ export class PackageService {
     ).toFixed(1)
 
     return { ..._package, totalReservations: reservations.length, averageFeedbacksValue }
+  }
+
+  public getPackageGroupInfor = async (packageId: string) => {
+    const reservations = await this.prismaService.client.reservation.findMany({
+      where: {
+        packageId
+      }
+    })
+
+    const feedbacks = reservations.filter((r) => r.feedback).map((r) => r.feedback) as Feedback[]
+
+    const averageFeedbacksValue = Number(
+      feedbacks.reduce((totalFeedbackValue, currentFeedback) => totalFeedbackValue + currentFeedback.value, 0) /
+        feedbacks.length
+    ).toFixed(1)
+    return { averageFeedbacksValue, totalReservations: reservations.length }
   }
 }

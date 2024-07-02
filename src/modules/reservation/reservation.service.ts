@@ -228,7 +228,7 @@ export class ReservationService {
     }
 
     if (reservation.status !== 'Progress') {
-      throw new BadRequestException('Only can reject progress reservation')
+      throw new BadRequestException('Only can complete progress reservation')
     }
 
     await this.prismaService.client.reservation.update({

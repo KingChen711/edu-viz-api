@@ -30,7 +30,7 @@ export class ChatService {
   constructor(@inject(PrismaService) private readonly prismaService: PrismaService) {}
 
   private connectUserToHub = async (userId: string, hubId: string) => {
-    await this.prismaService.client.user.update({
+    return await this.prismaService.client.user.update({
       where: {
         id: userId
       },
@@ -44,26 +44,52 @@ export class ChatService {
     })
   }
 
-  private getOrCreateHub = async (userId1: string, userId2: string) => {
+  public getOrCreateHub = async (senderId: string, receiverId: string) => {
     const hub = await this.prismaService.client.hub.findFirst({
       where: {
-        AND: { userIds: { hasEvery: [userId1, userId2] } }
-      }
+        AND: { userIds: { hasEvery: [senderId, receiverId] } }
+      },
+      include: { users: true }
     })
 
     if (hub) return hub
     const newHub = await this.prismaService.client.hub.create({
-      data: { userIds: [] }
+      data: { userIds: [] },
+      include: { users: true }
     })
 
-    const connectUser1Promise = this.connectUserToHub(userId1, newHub.id)
-    const connectUser2Promise = this.connectUserToHub(userId2, newHub.id)
-    await Promise.all([connectUser1Promise, connectUser2Promise])
+    const connectSenderPromise = this.connectUserToHub(senderId, newHub.id)
+    const connectReceiverPromise = this.connectUserToHub(receiverId, newHub.id)
+    const [receiver] = await Promise.all([connectReceiverPromise, connectSenderPromise])
+
+    //create first message
+    await this.prismaService.client.message.create({
+      data: {
+        type: 'Text',
+        content: receiver.tutor?.automaticGreeting || "Hello, let's order my services",
+        hub: {
+          connect: {
+            id: newHub.id
+          }
+        },
+        receiver: {
+          connect: {
+            id: senderId
+          }
+        },
+        sender: {
+          connect: {
+            id: receiverId
+          }
+        },
+        isSeen: false
+      }
+    })
 
     return newHub
   }
 
-  private createMessage = async (params: TCreateMessage) => {
+  public createMessage = async (params: TCreateMessage) => {
     const { receiverId, senderId, type } = params
     let content: string | undefined = undefined
     let image: string | undefined = undefined
@@ -90,34 +116,40 @@ export class ChatService {
 
     const hub = await this.getOrCreateHub(senderId, receiverId)
 
-    const now = new Date(Date.now())
-    await this.prismaService.client.hub.update({
-      where: { id: hub.id },
+    const message = await this.prismaService.client.message.create({
       data: {
-        lastMessageAt: now,
-        messages: {
-          create: {
-            reservationId,
-            image,
-            content,
-            video,
-            isSeen: false,
-            type: type,
-            receiver: {
-              connect: {
-                id: receiverId
-              }
-            },
-            sender: {
-              connect: {
-                id: senderId
-              }
-            },
-            createdAt: now
+        reservationId,
+        image,
+        content,
+        video,
+        isSeen: false,
+        type: type,
+        receiver: {
+          connect: {
+            id: receiverId
+          }
+        },
+        sender: {
+          connect: {
+            id: senderId
+          }
+        },
+        hub: {
+          connect: {
+            id: hub.id
           }
         }
       }
     })
+
+    await this.prismaService.client.hub.update({
+      where: { id: hub.id },
+      data: {
+        lastMessageAt: message.createdAt
+      }
+    })
+
+    return { hub, message }
   }
 
   public createReservationOrderMessage = async (studentId: string, tutorId: string, reservationId: string) =>

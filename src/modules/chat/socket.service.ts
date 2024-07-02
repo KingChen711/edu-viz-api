@@ -5,6 +5,21 @@ import { Socket } from 'socket.io'
 import { io } from '../..'
 import { PrismaService } from '../prisma/prisma.service'
 
+export type TSendMessage = { receiverId: string; senderId: string; type: 'Text' | 'Image' | 'Video' } & (
+  | {
+      type: 'Text'
+      content: string
+    }
+  | {
+      type: 'Image'
+      image: string
+    }
+  | {
+      type: 'Video'
+      video: string
+    }
+)
+
 @injectable()
 export class SocketService {
   constructor(
@@ -14,6 +29,7 @@ export class SocketService {
 
   public joinRoom(socket: Socket, room: string) {
     socket.join(room)
+    console.log('message', `User ${socket.id} has joined the room ${room}`)
     io.to(room).emit('message', `User ${socket.id} has joined the room ${room}`)
   }
 
@@ -22,7 +38,17 @@ export class SocketService {
     io.to(room).emit('message', `User ${socket.id} has left the room ${room}`)
   }
 
-  public sendMessage(socket: Socket, msg: { room: string; message: string }) {
-    io.to(msg.room).emit('message', msg.message)
+  public async sendMessage(socket: Socket, msg: TSendMessage) {
+    try {
+      const { hub, message } = await this.chatService.createMessage(msg)
+      const clerkIds = hub.users.map((u) => u.clerkId) as string[]
+
+      console.log({ clerkIds, message })
+
+      io.to(clerkIds[0]).emit('chatMessage', message)
+      io.to(clerkIds[1]).emit('chatMessage', message)
+    } catch (error) {
+      console.log(error)
+    }
   }
 }

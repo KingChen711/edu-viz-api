@@ -40,13 +40,7 @@ export class SocketService {
 
   public async sendMessage(socket: Socket, msg: TSendMessage) {
     try {
-      const { hub, message } = await this.chatService.createMessage(msg)
-      const clerkIds = hub.users.map((u) => u.clerkId) as string[]
-
-      console.log({ clerkIds, message })
-
-      io.to(clerkIds[0]).emit('chatMessage', message)
-      io.to(clerkIds[1]).emit('chatMessage', message)
+      await this.chatService.createMessage(msg)
     } catch (error) {
       console.log(error)
     }

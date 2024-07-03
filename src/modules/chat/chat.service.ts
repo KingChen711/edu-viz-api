@@ -1,6 +1,7 @@
 import { MessageType } from '@prisma/client'
 import { inject, injectable } from 'inversify'
 
+import { io } from '../../'
 import { PrismaService } from '../prisma/prisma.service'
 
 type TCreateMessage = {
@@ -148,6 +149,27 @@ export class ChatService {
         lastMessageAt: message.createdAt
       }
     })
+
+    let reservation: any
+    if (message.reservationId) {
+      reservation = await this.prismaService.client.reservation.findUnique({
+        where: {
+          id: reservationId
+        },
+        include: {
+          package: {
+            include: {
+              subject: true
+            }
+          }
+        }
+      })
+    }
+
+    const clerkIds = hub.users.map((u) => u.clerkId) as string[]
+
+    io.to(clerkIds[0]).emit('chatMessage', { ...message, reservation })
+    io.to(clerkIds[1]).emit('chatMessage', { ...message, reservation })
 
     return { hub, message }
   }

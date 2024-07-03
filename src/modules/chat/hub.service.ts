@@ -118,12 +118,15 @@ export class HubService {
     })) as (Message & { reservation: Reservation | undefined })[]
 
     //load reservations
-    const reservationIdToIndex: Record<string, number> = {}
+    const reservationIdToIndex: Record<string, number[]> = {}
     messages.forEach((m, index) => {
       if (m.reservationId) {
-        reservationIdToIndex[m.reservationId] = index
+        reservationIdToIndex[m.reservationId] = reservationIdToIndex[m.reservationId]
+          ? [...reservationIdToIndex[m.reservationId], index]
+          : [index]
       }
     })
+    console.log(reservationIdToIndex)
 
     const reservations = await this.prismaService.client.reservation.findMany({
       where: {
@@ -141,8 +144,10 @@ export class HubService {
     })
 
     reservations.forEach((reservation) => {
-      const index = reservationIdToIndex[reservation.id]
-      messages[index].reservation = reservation
+      const indexes = reservationIdToIndex[reservation.id]
+      indexes.forEach((index) => {
+        messages[index].reservation = reservation
+      })
     })
 
     return messages

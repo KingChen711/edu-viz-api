@@ -127,6 +127,19 @@ export class ReservationService {
       throw new BadRequestException('Only can approve pending reservation')
     }
 
+    const hasReservationIsActive = await this.prismaService.client.reservation.findFirst({
+      where: {
+        package: {
+          tutorId: user.id
+        },
+        status: { in: [ReservationStatus.Progress] }
+      }
+    })
+
+    if (hasReservationIsActive) {
+      throw new BadRequestException('Cannot create a reservation while already have a active reservation')
+    }
+
     await this.prismaService.client.reservation.update({
       where: {
         id: reservationId
@@ -136,13 +149,13 @@ export class ReservationService {
       }
     })
 
-    await this.chatService.createReservationApproveMessage(
+    const { hub } = await this.chatService.createReservationApproveMessage(
       reservation.studentId,
       reservation.package.tutorId,
       reservation.id
     )
 
-    //TODO: auto complete reservation in 24 hour if not complete
+    return { hubId: hub.id }
   }
 
   public rejectReservation = async (user: UserWithRole, schema: TApproveOrRejectReservationSchema) => {
@@ -192,11 +205,13 @@ export class ReservationService {
       }
     })
 
-    await this.chatService.createReservationRejectMessage(
+    const { hub } = await this.chatService.createReservationRejectMessage(
       reservation.studentId,
       reservation.package.tutorId,
       reservation.id
     )
+
+    return { hubId: hub.id }
   }
 
   public completeReservation = async (user: UserWithRole, schema: TCompleteReservationSchema) => {
@@ -251,10 +266,12 @@ export class ReservationService {
       }
     })
 
-    await this.chatService.createReservationCompleteMessage(
+    const { hub } = await this.chatService.createReservationCompleteMessage(
       reservation.studentId,
       reservation.package.tutorId,
       reservation.id
     )
+
+    return { hubId: hub.id }
   }
 }

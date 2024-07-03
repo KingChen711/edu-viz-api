@@ -3,7 +3,7 @@ import { Request } from 'express'
 import { inject, injectable } from 'inversify'
 
 import BadRequestException from '../../helpers/errors/bad-request.exception'
-import { noContent } from '../../helpers/utils'
+import { noContent, ok } from '../../helpers/utils'
 
 import { ResponseWithUser, UserWithRole } from '../../types'
 import { PrismaService } from '../prisma/prisma.service'
@@ -53,27 +53,31 @@ export class ReservationController {
 
   public approveReservation = async (req: Request, res: ResponseWithUser) => {
     const user = res.locals.user
-    await this.reservationService.approveReservation(user, res.locals.requestData)
-    return noContent(res)
+    const data = await this.reservationService.approveReservation(user, res.locals.requestData)
+    return ok(res, data)
   }
 
   public rejectReservation = async (req: Request, res: ResponseWithUser) => {
     const user = res.locals.user
 
+    const data = { hubId: '' }
     await this.noReentrancy(user, async () => {
-      await this.reservationService.rejectReservation(user, res.locals.requestData)
+      const { hubId } = await this.reservationService.rejectReservation(user, res.locals.requestData)
+      data.hubId = hubId
     })
 
-    return noContent(res)
+    return ok(res, data)
   }
 
   public completeReservation = async (req: Request, res: ResponseWithUser) => {
     const user = res.locals.user
 
+    const data = { hubId: '' }
     await this.noReentrancy(user, async () => {
-      await this.reservationService.completeReservation(user, res.locals.requestData)
+      const { hubId } = await this.reservationService.completeReservation(user, res.locals.requestData)
+      data.hubId = hubId
     })
 
-    return noContent(res)
+    return ok(res, data)
   }
 }

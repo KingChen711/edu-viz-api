@@ -93,5 +93,3 @@ bootstrap()
 
 export { io }
 export default app
-
-//TODO: load reservation on realtime message

@@ -2,9 +2,11 @@
 import 'dotenv/config'
 
 import { PackageController } from './package.controller'
-import { getFeedbacksSchema, getPackageSchema, getPackagesSchema } from './package.validation'
+import { createPackageSchema, getFeedbacksSchema, getPackageSchema, getPackagesSchema } from './package.validation'
 import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node'
 import express from 'express'
+import { authorize } from 'src/middleware/authorize.middleware'
+import { Role } from 'src/types'
 
 import { container } from '../../config/inversify.config'
 
@@ -29,6 +31,16 @@ router.get(
   authentication(false),
   validateRequestData(getPackageSchema),
   packageController.getPackage
+)
+
+router.get('/my-packages', ClerkExpressWithAuth(), authorize([Role.TUTOR]), packageController.getMyPackages)
+
+router.post(
+  '/',
+  ClerkExpressWithAuth(),
+  authorize([Role.TUTOR]),
+  validateRequestData(createPackageSchema),
+  packageController.createPackage
 )
 
 router.get(

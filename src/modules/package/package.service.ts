@@ -1,4 +1,4 @@
-import { TGetPackageSchema, TGetPackagesSchema } from './package.validation'
+import { TCreatePackageSchema, TGetPackageSchema, TGetPackagesSchema } from './package.validation'
 import { Feedback, PackageStatus, Prisma } from '@prisma/client'
 import { inject, injectable } from 'inversify'
 
@@ -22,8 +22,6 @@ export class PackageService {
     const {
       query: { pageNumber, pageSize, sort, subjectName, search, status }
     } = schema
-
-    console.log({ subjectName })
 
     const subjectFilter: Prisma.PackageWhereInput = subjectName
       ? {
@@ -166,5 +164,54 @@ export class PackageService {
         feedbacks.length
     ).toFixed(1)
     return { averageFeedbacksValue, totalReservations: reservations.length }
+  }
+
+  public createPackage = async (user: UserWithRole, schema: TCreatePackageSchema) => {
+    const {
+      body: { pricePerHour, images, subjectId, video }
+    } = schema
+
+    await this.prismaService.client.package.create({
+      data: {
+        pricePerHour,
+        images,
+        subjectId,
+        video,
+        tutorId: user.id,
+        status: 'Active' //TODO: fix to moderated needed later ( or never :V )
+      }
+    })
+  }
+
+  public getMyPackages = async (user: UserWithRole) => {
+    const packages = await this.prismaService.client.package.findMany({
+      where: {
+        tutorId: user.id
+      },
+      include: {
+        subject: true,
+        reservations: true
+      }
+    })
+
+    const mappedPackages = packages.map((_package) => {
+      const feedbacks = _package.reservations.filter((r) => r.feedback).map((r) => r.feedback) as Feedback[]
+
+      const averageFeedbacksValue = Number(
+        (
+          feedbacks.reduce((totalFeedbackValue, currentFeedback) => totalFeedbackValue + currentFeedback.value, 0) /
+          feedbacks.length
+        ).toFixed(1)
+      )
+
+      return {
+        ..._package,
+        reservations: undefined,
+        totalReservations: _package.reservations.length,
+        averageFeedbacksValue
+      }
+    })
+
+    return mappedPackages
   }
 }

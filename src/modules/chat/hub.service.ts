@@ -126,7 +126,6 @@ export class HubService {
           : [index]
       }
     })
-    console.log(reservationIdToIndex)
 
     const reservations = await this.prismaService.client.reservation.findMany({
       where: {

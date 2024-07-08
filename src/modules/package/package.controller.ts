@@ -6,9 +6,9 @@ import { inject, injectable } from 'inversify'
 
 import ForbiddenException from '../../helpers/errors/forbidden-exception'
 import NotFoundException from '../../helpers/errors/not-found.exception'
-import { ok } from '../../helpers/utils'
+import { noContent, ok } from '../../helpers/utils'
 
-import { Role, UserWithRole } from '../../types'
+import { ResponseWithUser, Role, UserWithRole } from '../../types'
 import { PrismaService } from '../prisma/prisma.service'
 import { ReservationService } from '../reservation/reservation.service'
 
@@ -62,5 +62,17 @@ export class PackageController {
 
     const feedbacks = await this.reservationService.getFeedbacks(res.locals.requestData)
     return ok(res, feedbacks)
+  }
+
+  public createPackage = async (req: Request, res: ResponseWithUser) => {
+    const user = res.locals.user
+    await this.packageService.createPackage(user, res.locals.requestData)
+    return noContent(res)
+  }
+
+  public getMyPackages = async (req: Request, res: ResponseWithUser) => {
+    const user = res.locals.user
+    const packages = await this.packageService.getMyPackages(user)
+    return ok(res, packages)
   }
 }

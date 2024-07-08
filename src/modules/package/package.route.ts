@@ -5,13 +5,13 @@ import { PackageController } from './package.controller'
 import { createPackageSchema, getFeedbacksSchema, getPackageSchema, getPackagesSchema } from './package.validation'
 import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node'
 import express from 'express'
-import { authorize } from 'src/middleware/authorize.middleware'
-import { Role } from 'src/types'
 
 import { container } from '../../config/inversify.config'
 
 import { authentication } from '../../middleware/authentication.middleware'
+import { authorize } from '../../middleware/authorize.middleware'
 import { validateRequestData } from '../../middleware/validate-request-data.middleware'
+import { Role } from '../../types'
 
 const router = express.Router()
 

@@ -2,12 +2,12 @@ import { ChatController } from './chat.controller'
 import { getHubIdSchema, getHubSchema, getMessagesSchema } from './chat.validation'
 import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node'
 import express from 'express'
-import { Role } from 'src/types'
 
 import { container } from '../../config/inversify.config'
 
 import { authorize } from '../../middleware/authorize.middleware'
 import { validateRequestData } from '../../middleware/validate-request-data.middleware'
+import { Role } from '../../types'
 
 const router = express.Router()
 

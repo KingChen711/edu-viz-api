@@ -5,9 +5,10 @@ import { SocketService, TSendMessage } from './socket.service'
 import { Request } from 'express'
 import { inject, injectable } from 'inversify'
 import { Socket } from 'socket.io'
-import { ResponseWithUser } from 'src/types'
 
 import { ok } from '../../helpers/utils'
+
+import { ResponseWithUser } from '../../types'
 
 @injectable()
 export class ChatController {

@@ -31,7 +31,7 @@ router.patch(
 router.patch(
   '/:reservationId/reject',
   ClerkExpressWithAuth(),
-  authorize([Role.TUTOR]),
+  authorize(),
   validateRequestData(approveOrRejectReservationSchema),
   reservationController.rejectReservation
 )

@@ -2,6 +2,7 @@ import { TCreatePackageSchema, TGetPackageSchema, TGetPackagesSchema } from './p
 import { Feedback, PackageStatus, Prisma } from '@prisma/client'
 import { inject, injectable } from 'inversify'
 
+import BadRequestException from '../../helpers/errors/bad-request.exception'
 import ForbiddenException from '../../helpers/errors/forbidden-exception'
 import NotFoundException from '../../helpers/errors/not-found.exception'
 import { PagedList } from '../../helpers/paged-list'
@@ -170,6 +171,19 @@ export class PackageService {
     const {
       body: { pricePerHour, images, subjectId, video }
     } = schema
+
+    const alreadyHasPackage = await this.prismaService.client.package.findUnique({
+      where: {
+        tutorId_subjectId: {
+          tutorId: user.id,
+          subjectId
+        }
+      }
+    })
+
+    if (alreadyHasPackage) {
+      throw new BadRequestException('Already exist package with this subject')
+    }
 
     await this.prismaService.client.package.create({
       data: {

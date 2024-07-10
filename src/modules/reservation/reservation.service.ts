@@ -181,7 +181,7 @@ export class ReservationService {
       throw new NotFoundException(`Not found reservations with id: ${reservationId}`)
     }
 
-    if (reservation.package.tutorId !== user.id) {
+    if (reservation.package.tutorId !== user.id && reservation.studentId !== user.id) {
       throw new ForbiddenException()
     }
 
@@ -205,11 +205,18 @@ export class ReservationService {
       }
     })
 
-    const { hub } = await this.chatService.createReservationRejectMessage(
-      reservation.studentId,
-      reservation.package.tutorId,
-      reservation.id
-    )
+    const { hub } =
+      user.id === reservation.studentId
+        ? await this.chatService.createReservationRejectMessage(
+            reservation.package.tutorId,
+            reservation.studentId,
+            reservation.id
+          )
+        : await this.chatService.createReservationRejectMessage(
+            reservation.studentId,
+            reservation.package.tutorId,
+            reservation.id
+          )
 
     return { hubId: hub.id }
   }

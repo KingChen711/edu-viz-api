@@ -41,4 +41,6 @@ export class UserService {
       where: { email },
       data: user
     })
+
+  public getAll = async () => await this.prismaService.client.user.findMany()
 }

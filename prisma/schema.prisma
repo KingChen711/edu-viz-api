@@ -164,5 +164,4 @@ enum PackageStatus {
   Reject
   Active //Moderated
   Disable
-  Cancel
 }

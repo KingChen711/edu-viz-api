@@ -7,7 +7,6 @@ import { container } from '../../config/inversify.config'
 
 import { authorize } from '../../middleware/authorize.middleware'
 import { validateRequestData } from '../../middleware/validate-request-data.middleware'
-import { Role } from '../../types'
 
 const router = express.Router()
 
@@ -28,7 +27,7 @@ router.get(
 router.get(
   '/hubs/get-hub-id/:otherUserId',
   ClerkExpressWithAuth(),
-  authorize([Role.STUDENT]),
+  authorize(),
   validateRequestData(getHubIdSchema),
   chatController.getHubId
 )

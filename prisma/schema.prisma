@@ -34,7 +34,7 @@ model User {
   balance     Int      @default(0)
   lockPayment Boolean  @default(false)
 
-  tutor Tutor?
+  tutorProps TutorProps?
 
   role         Role          @relation(fields: [roleId], references: [id])
   hubs         Hub[]         @relation(fields: [hubIds], references: [id])
@@ -47,7 +47,7 @@ model User {
   @@map("users")
 }
 
-type Tutor {
+type TutorProps {
   isAvailable       Boolean  @default(false)
   automaticGreeting String   @default("Hello mấy cưng")
   bio               String?
@@ -113,14 +113,16 @@ enum MessageType {
 }
 
 model Package {
-  id           String        @id @default(auto()) @map("_id") @db.ObjectId
-  subjectId    String        @db.ObjectId
-  tutorId      String        @db.ObjectId
-  pricePerHour Int
-  images       String[] //max 6
-  video        String?
-  status       PackageStatus @default(Pending)
-  createdAt    DateTime      @default(now())
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
+  subjectId         String        @db.ObjectId
+  tutorId           String        @db.ObjectId
+  pricePerHour      Int
+  images            String[] //max 6
+  video             String?
+  status            PackageStatus @default(Pending)
+  createdAt         DateTime      @default(now())
+  totalReservations Int //sync with toal reservations of packages
+  averageRating     Float //sync with average feedbacks value
 
   tutor        User          @relation(fields: [tutorId], references: [id])
   subject      Subject       @relation(fields: [subjectId], references: [id])
